@@ -19,17 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.metrics.agenda;
+package org.jboss.metrics.agenda.impl;
 
-import java.util.Set;
+
+import org.jboss.metrics.agenda.DMROperation;
 
 /**
- * An interface to create {@link org.jboss.metrics.agenda.Operation}s out of
- * {@link org.jboss.metrics.agenda.TaskGroup}s.
+ * An interface to create {@link org.jboss.metrics.agenda.DMROperation}s out of
+ * {@link org.jboss.metrics.agenda.impl.TaskGroup}s.
  *
  * @author Harald Pehl
  */
 public interface OperationBuilder {
 
-    Set<Operation> createOperation(TaskGroup group);
+    DMROperation createOperation(TaskGroup group);
 }

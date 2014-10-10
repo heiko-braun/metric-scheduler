@@ -21,16 +21,14 @@
  */
 package org.jboss.metrics.agenda;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.*;
 
 /**
  * @author Harald Pehl
  */
-public enum Interval {
+public enum Interval{
 
     EACH_SECOND(1, SECONDS),
     TWO_SECONDS(2, SECONDS),

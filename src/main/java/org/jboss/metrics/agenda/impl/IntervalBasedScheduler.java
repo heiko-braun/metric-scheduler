@@ -21,10 +21,17 @@
  */
 package org.jboss.metrics.agenda.impl;
 
-import static com.codahale.metrics.MetricRegistry.name;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.jboss.metrics.agenda.Scheduler.State.RUNNING;
-import static org.jboss.metrics.agenda.Scheduler.State.STOPPED;
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
+import org.jboss.metrics.agenda.DMROperation;
+import org.jboss.metrics.agenda.OperationResult;
+import org.jboss.metrics.agenda.OperationResultConsumer;
+import org.jboss.metrics.agenda.Statistics;
+import org.jboss.metrics.agenda.Task;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -39,18 +46,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
-import org.jboss.metrics.agenda.Operation;
-import org.jboss.metrics.agenda.OperationResult;
-import org.jboss.metrics.agenda.OperationResultConsumer;
-import org.jboss.metrics.agenda.Statistics;
-import org.jboss.metrics.agenda.Task;
-import org.jboss.metrics.agenda.TaskGroup;
+import static com.codahale.metrics.MetricRegistry.name;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.jboss.metrics.agenda.Scheduler.State.RUNNING;
+import static org.jboss.metrics.agenda.Scheduler.State.STOPPED;
 
 /**
  * @author Harald Pehl
@@ -94,18 +93,19 @@ public class IntervalBasedScheduler extends AbstractScheduler {
     }
 
     @Override
-    public void start(Set<Task> tasks) {
+    public void schedule(List<Task> tasks) {
         verifyState(STOPPED);
 
          // optimize task groups
-        Set<TaskGroup> groups = new IntervalGrouping().apply(tasks);
+        List<TaskGroup> groups = new IntervalGrouping().apply(tasks);
 
         // create IO blocks
-        Set<Operation> operations = new HashSet<>();
+        Set<DMROperation> operations = new HashSet<>();
         ReadAttributeOperationBuilder operationBuilder = new ReadAttributeOperationBuilder();
         for (TaskGroup group : groups) {
-            operations.addAll(operationBuilder.createOperation(group));
+            operations.add(operationBuilder.createOperation(group));
         }
+
 
         System.out.println("<< Number of Tasks: "+tasks.size()+" >>");
         System.out.println("<< Number of Task Groups: "+groups.size()+" >>");
@@ -122,13 +122,13 @@ public class IntervalBasedScheduler extends AbstractScheduler {
             }
         }
 
-        // maintain job references
-        for (Operation operation : operations) {
+        // schedule jobs
+        for (DMROperation operation : operations) {
             jobs.add(
 
                     // schedule tasks
                     executorService.scheduleWithFixedDelay(
-                            new OperationExecution(operation),
+                            new IO(operation),
                             0, operation.getInterval(),
                             MILLISECONDS
                     )
@@ -139,7 +139,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
     }
 
     @Override
-    public void stop() {
+    public void shutdown() {
         verifyState(RUNNING);
 
 
@@ -173,11 +173,11 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         return null;
     }
 
-    private class OperationExecution implements Runnable {
+    private class IO implements Runnable {
 
-        private final Operation operation;
+        private final DMROperation operation;
 
-        private OperationExecution(final Operation operation) {
+        private IO(final DMROperation operation) {
             this.operation = operation;
         }
 

@@ -37,13 +37,17 @@ public class DemoApp {
 
     public static void main(String[] args) throws Exception {
 
-          // read configuration
+        // create configuration
         Configuration configuration = ConfigurationBuilder.load();
 
+        // create service
         Service service = new Service(configuration);
 
+        // schedule
         service.start();
         SECONDS.sleep(10);
+
+        // shutdown
         service.stop();
     }
 }

@@ -19,15 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.metrics.agenda;
+package org.jboss.metrics.agenda.impl;
+
+import org.jboss.metrics.agenda.Task;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Harald Pehl
  */
 public interface TaskGrouping {
 
-    Set<TaskGroup> apply(Set<Task> tasks);
+    List<TaskGroup> apply(List<Task> tasks);
 }

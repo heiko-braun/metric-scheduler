@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 import org.jboss.metrics.agenda.ResourceRef;
-import org.jboss.metrics.agenda.TaskGroup;
+
 import org.junit.Before;
 import org.junit.Test;
 

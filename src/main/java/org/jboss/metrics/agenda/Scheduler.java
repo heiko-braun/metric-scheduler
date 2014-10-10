@@ -21,7 +21,7 @@
  */
 package org.jboss.metrics.agenda;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author Harald Pehl
@@ -30,9 +30,9 @@ public interface Scheduler {
 
     public enum State {RUNNING, STOPPED}
 
-    void start(Set<Task> operations);
+    void schedule(List<Task> operations);
 
-    void stop();
+    void shutdown();
 
     /**
      * Returns the current statistics. This method must not block the executor and return almost instantly.

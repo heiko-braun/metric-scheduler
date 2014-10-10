@@ -19,9 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.metrics.agenda;
+package org.jboss.metrics.agenda.impl;
 
 import com.google.common.collect.Iterators;
+import org.jboss.metrics.agenda.Interval;
+import org.jboss.metrics.agenda.Task;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,53 +34,18 @@ import java.util.UUID;
 /**
  * @author Harald Pehl
  */
-public class TaskGroup implements Iterable<Task> {
-
-    public final static String ANY_HOST = TaskGroup.class.getName() + ".anyHost";
-    public final static String ANY_SERVER = TaskGroup.class.getName() + ".anyServer";
+class TaskGroup implements Iterable<Task> {
 
     private final String id; // to uniquely reference this group
     private final Interval interval; // impacts thread scheduling
-    private final String host; // impacts DC - HC communication
-    private final String server; // impacts DC - HC communication
+    private final long offsetMillis;
     private final Set<Task> tasks;
 
     public TaskGroup(final Interval interval) {
-        this(interval, ANY_HOST, ANY_SERVER);
-    }
-
-    public TaskGroup(final Interval interval, String host) {
-        this(interval, host, ANY_SERVER);
-    }
-
-    public TaskGroup(final Interval interval, final String host, final String server) {
+        this.offsetMillis = 0;
         this.id = UUID.randomUUID().toString();
         this.interval = interval;
-        this.host = host;
-        this.server = server;
         this.tasks = new HashSet<>();
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) { return true; }
-        if (!(o instanceof TaskGroup)) { return false; }
-
-        TaskGroup taskGroup = (TaskGroup) o;
-
-        if (!host.equals(taskGroup.host)) { return false; }
-        if (interval != taskGroup.interval) { return false; }
-        if (!server.equals(taskGroup.server)) { return false; }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = interval.hashCode();
-        result = 31 * result + host.hashCode();
-        result = 31 * result + server.hashCode();
-        return result;
     }
 
     public void addTask(Task task) {
@@ -116,11 +83,7 @@ public class TaskGroup implements Iterable<Task> {
         return interval;
     }
 
-    public String getHost() {
-        return host;
-    }
-
-    public String getServer() {
-        return server;
+    public long getOffsetMillis() {
+        return offsetMillis;
     }
 }

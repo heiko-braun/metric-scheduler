@@ -21,9 +21,9 @@
  */
 package org.jboss.metrics.agenda.impl;
 
-import static org.jboss.metrics.agenda.Scheduler.State.STOPPED;
-
 import org.jboss.metrics.agenda.Scheduler;
+
+import static org.jboss.metrics.agenda.Scheduler.State.STOPPED;
 
 /**
  * @author Harald Pehl

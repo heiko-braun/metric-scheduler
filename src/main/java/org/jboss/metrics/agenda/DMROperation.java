@@ -21,22 +21,22 @@
  */
 package org.jboss.metrics.agenda;
 
-import java.util.UUID;
-
 import org.jboss.dmr.ModelNode;
+
+import java.util.UUID;
 
 /**
  * An executable operation holding an unique id and a {@link org.jboss.dmr.ModelNode} model node.
  *
  * @author Harald Pehl
  */
-public class Operation {
+public class DMROperation {
 
     private final String id;
     private final long interval;
     private final ModelNode modelNode;
 
-    public Operation(final long interval, final ModelNode modelNode) {
+    public DMROperation(final long interval, final ModelNode modelNode) {
         this.interval = interval;
         this.id = UUID.randomUUID().toString();
         this.modelNode = modelNode;
@@ -45,9 +45,9 @@ public class Operation {
     @Override
     public boolean equals(final Object o) {
         if (this == o) { return true; }
-        if (!(o instanceof Operation)) { return false; }
+        if (!(o instanceof DMROperation)) { return false; }
 
-        Operation operation = (Operation) o;
+        DMROperation operation = (DMROperation) o;
 
         if (!id.equals(operation.id)) { return false; }
 

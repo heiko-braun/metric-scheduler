@@ -5,11 +5,12 @@ import static org.jboss.metrics.agenda.Interval.EACH_SECOND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+
 import org.junit.Test;
 
 public class TaskGroupTest {
 
-    @Test
+  /*  @Test
     public void defaults() {
         TaskGroup group = new TaskGroup(EACH_SECOND);
         assertEquals(TaskGroup.ANY_HOST, group.getHost());
@@ -35,5 +36,5 @@ public class TaskGroupTest {
     public void interval() {
         TaskGroup group = new TaskGroup(EACH_SECOND);
         group.addTask(ConfigurationBuilder.fooTask(EACH_MINUTE));
-    }
+    }*/
 }

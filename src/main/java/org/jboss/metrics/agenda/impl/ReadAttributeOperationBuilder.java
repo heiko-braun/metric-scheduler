@@ -21,55 +21,40 @@
  */
 package org.jboss.metrics.agenda.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.dmr.ModelNode;
-import org.jboss.metrics.agenda.Operation;
-import org.jboss.metrics.agenda.OperationBuilder;
-import org.jboss.metrics.agenda.ResourceRef;
+import org.jboss.metrics.agenda.DMROperation;
 import org.jboss.metrics.agenda.Task;
-import org.jboss.metrics.agenda.TaskGroup;
 import org.jboss.metrics.agenda.address.Address;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Creates a {@code read-attribute} operation of the given {@link org.jboss.metrics.agenda.TaskGroup}.
+ * Creates a {@code read-attribute} operation of the given {@link org.jboss.metrics.agenda.impl.TaskGroup}.
  *
  * @author Harald Pehl
  */
 public class ReadAttributeOperationBuilder implements OperationBuilder {
 
     @Override
-    public Set<Operation> createOperation(final TaskGroup group) {
+    public DMROperation createOperation(final TaskGroup group) {
 
         if (group.isEmpty()) {
             throw new IllegalArgumentException("Empty groups are not allowed");
         }
 
-
-        HashSet<Operation> operations = new HashSet<>();
-        for (Task t : group) {
-            ModelNode node = readAttribute(t);
-            operations.add(new Operation(group.getInterval().millis(), node));
+        ModelNode comp = new ModelNode();
+        List<ModelNode> steps = new ArrayList<>();
+        comp.get("address").setEmptyList();
+        comp.get("operation").set("composite");
+        for (Task task : group) {
+            steps.add(readAttribute(task));
         }
+        comp.get("steps").set(steps);
+        DMROperation operation = new DMROperation(group.getInterval().millis(), comp);
 
-        return operations;
+        return operation;
 
-      /*  if (group.size() == 1) {
-            ModelNode node = readAttribute(group.iterator().next());
-            return new HashSet<>(asList(new Operation(group.getInterval().millis(), node)));
-
-        } else {
-            ModelNode comp = new ModelNode();
-            List<ModelNode> steps = new ArrayList<>();
-            comp.get("address").setEmptyList();
-            comp.get("operation").set("composite");
-            for (Task task : group) {
-                steps.add(readAttribute(task));
-            }
-            comp.get("steps").set(steps);
-            return new HashSet<>(asList(new Operation(group.getInterval().millis(), comp)));
-        }*/
     }
 
     private ModelNode readAttribute(Task task) {

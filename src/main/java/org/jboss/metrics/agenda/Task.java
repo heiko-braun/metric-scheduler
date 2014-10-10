@@ -8,7 +8,7 @@ import org.jboss.metrics.agenda.address.Address;
  */
 public class Task {
 
-    private final Address address;
+    private final Address address;  // absolute address
     private final String attribute;
     private final Interval interval;
 

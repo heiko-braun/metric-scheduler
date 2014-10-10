@@ -21,18 +21,13 @@
  */
 package org.jboss.metrics.agenda.impl;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
 import org.jboss.metrics.agenda.Interval;
-import org.jboss.metrics.agenda.ResourceRef;
 import org.jboss.metrics.agenda.Task;
-import org.jboss.metrics.agenda.TaskGroup;
-import org.jboss.metrics.agenda.TaskGrouping;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author Harald Pehl
@@ -40,21 +35,32 @@ import org.jboss.metrics.agenda.TaskGrouping;
 public class IntervalGrouping implements TaskGrouping {
 
     @Override
-    public Set<TaskGroup> apply(final Set<Task> tasks) {
-        ImmutableListMultimap<Interval, Task> tasksByInterval = Multimaps
-                .index(tasks, new Function<Task, Interval>() {
-                    @Override
-                    public Interval apply(final Task task) {
-                        return task.getInterval();
-                    }
-                });
+    public List<TaskGroup> apply(final List<Task> tasks) {
 
-        Set<TaskGroup> groups = new HashSet<>();
-        for (Interval interval : tasksByInterval.keys()) {
-            TaskGroup group = new TaskGroup(interval);
-            group.addTasks(tasksByInterval.get(interval));
-            groups.add(group);
+        Collections.sort(tasks, new Comparator<Task>() {
+            @Override
+            public int compare(Task t1, Task t2) {
+                return new Long(t1.getInterval().millis()).compareTo(t2.getInterval().millis());
+            }
+        });
+
+
+        List<TaskGroup> groups = new ArrayList<>();
+        Interval interval = tasks.get(0).getInterval();
+        TaskGroup taskGroup = new TaskGroup(interval);
+        groups.add(taskGroup);
+
+        for (Task task : tasks) {
+
+            if(!task.getInterval().equals(interval)) {
+                // new group
+                interval = task.getInterval();
+                groups.add(new TaskGroup(task.getInterval()));
+            }
+
+            groups.get(groups.size()-1).addTask(task);
         }
+
         return groups;
     }
 }
