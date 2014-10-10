@@ -1,4 +1,4 @@
-package org.jboss.metrics.scheduler.impl;
+package org.wildfly.metrics.scheduler.impl;
 
 import static org.wildfly.metrics.scheduler.cfg.Interval.EACH_SECOND;
 import static org.junit.Assert.assertEquals;

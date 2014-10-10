@@ -19,9 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.metrics.scheduler;
+package org.wildfly.metrics.scheduler;
 
-import org.wildfly.metrics.scheduler.Service;
 import org.wildfly.metrics.scheduler.cfg.Configuration;
 
 import static java.util.concurrent.TimeUnit.SECONDS;

@@ -47,6 +47,7 @@ import static org.wildfly.metrics.scheduler.Scheduler.State.STOPPED;
 
 /**
  * @author Harald Pehl
+ * @author Heiko Braun
  */
 public class IntervalBasedScheduler extends AbstractScheduler {
 

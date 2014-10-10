@@ -1,4 +1,4 @@
-package org.jboss.metrics.scheduler.cfg;
+package org.wildfly.metrics.scheduler.cfg;
 
 import static org.junit.Assert.*;
 

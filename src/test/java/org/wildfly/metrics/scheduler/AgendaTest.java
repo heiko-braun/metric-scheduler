@@ -1,4 +1,4 @@
-package org.jboss.metrics.scheduler;
+package org.wildfly.metrics.scheduler;
 
 import org.junit.Test;
 
