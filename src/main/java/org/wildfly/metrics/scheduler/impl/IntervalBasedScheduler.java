@@ -77,7 +77,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         });
 
         this.jobs = new LinkedList<>();
-        this.responseHandler = new PrintOperationResult();
+        this.responseHandler = new SystemOutHandler();
 
         // metrics
         MetricRegistry metrics = new MetricRegistry();

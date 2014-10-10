@@ -24,7 +24,7 @@ package org.wildfly.metrics.scheduler.impl;
 /**
  * @author Harald Pehl
  */
-public class PrintOperationResult implements DMRResponseHandler {
+public class SystemOutHandler implements DMRResponseHandler {
 
     @Override
     public void handle(final DMRResponse response) {
