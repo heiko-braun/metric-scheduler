@@ -1,4 +1,4 @@
-agenda
-======
+Wildfly Metric Scheduler
+========================
 
-Agenda for the upcoming metrics subsystem
+Schueduler for the upcoming metrics subsystem
