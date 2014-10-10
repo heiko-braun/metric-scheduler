@@ -58,12 +58,16 @@ public class IntervalBasedScheduler extends AbstractScheduler {
     private final Timer requestTimer;
     private final Counter delayCounter;
     private final int poolSize;
+    private final String host;
+    private final int port;
 
     private ConcurrentLinkedQueue<ModelControllerClient> connectionPool = new ConcurrentLinkedQueue<>();
 
-    public IntervalBasedScheduler(final int poolSize) {
+    public IntervalBasedScheduler(final int poolSize, String host, int port) {
 
         this.poolSize = poolSize;
+        this.host = host;
+        this.port = port;
         this.executorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -101,7 +105,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         for (int i = 0; i < poolSize; i++) {
             try {
                 connectionPool.add(
-                        ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999)
+                        ModelControllerClient.Factory.create(InetAddress.getByName(host), port)
                 );
             } catch (Throwable e) {
                 e.printStackTrace();

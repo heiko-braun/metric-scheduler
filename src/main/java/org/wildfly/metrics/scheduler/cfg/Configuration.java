@@ -34,9 +34,13 @@ public class Configuration {
 
     private final String id;
     private final List<ResourceRef> resourceRefs;
+    private String host;
+    private int port;
 
-    public Configuration(final String id, final List<ResourceRef> resourceRefs) {
+    public Configuration(final String id, String host, int port, final List<ResourceRef> resourceRefs) {
         this.id = id;
+        this.host = host;
+        this.port = port;
         this.resourceRefs = new ArrayList<>();
 
         if (resourceRefs != null) {
@@ -55,5 +59,13 @@ public class Configuration {
 
     public List<ResourceRef> getResourceRefs() {
         return Collections.unmodifiableList(resourceRefs);
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
     }
 }

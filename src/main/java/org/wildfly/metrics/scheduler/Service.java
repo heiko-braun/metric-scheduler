@@ -23,7 +23,7 @@ public class Service implements TopologyChangeListener {
     public Service(Configuration configuration) {
 
         this.configuration = configuration;
-        this.scheduler = new IntervalBasedScheduler(2);
+        this.scheduler = new IntervalBasedScheduler(2, configuration.getHost(), configuration.getPort());
     }
 
     void start() {

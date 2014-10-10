@@ -83,6 +83,6 @@ public final class TestConfiguration implements ConfigLoader {
             definitions.add(new ResourceRef(address, "ActiveCount", Interval.FIVE_SECONDS));
         }
 
-        return new Configuration("dataSourceAgenda", definitions);
+        return new Configuration("dataSourceAgenda", "localhost", 9999, definitions);
     }
 }

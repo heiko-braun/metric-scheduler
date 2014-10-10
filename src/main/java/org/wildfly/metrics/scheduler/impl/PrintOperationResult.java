@@ -28,9 +28,9 @@ public class PrintOperationResult implements DMRResponseHandler {
 
     @Override
     public void handle(final DMRResponse response) {
-       /* System.out.println(operationResult);
-        if(operationResult.getStatus() != OperationResult.Status.SUCCESS)
-            System.out.println(operationResult.getResult().asString());*/
+       //System.out.println(operationResult);
+        if(response.getStatus() != DMRResponse.Status.SUCCESS)
+            System.out.println(response.getResult().asString());
 
     }
 }

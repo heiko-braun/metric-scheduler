@@ -28,7 +28,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 /**
  * @author Harald Pehl
  */
-public class DemoApp {
+public class Example {
 
     public static void main(String[] args) throws Exception {
 
