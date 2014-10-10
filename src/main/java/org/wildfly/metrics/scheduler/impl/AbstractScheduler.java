@@ -26,7 +26,7 @@ import org.wildfly.metrics.scheduler.Scheduler;
 /**
  * @author Harald Pehl
  */
-public abstract class AbstractScheduler implements Scheduler {
+public abstract class AbstractScheduler<R> implements Scheduler {
 
     private State state = State.STOPPED;
 

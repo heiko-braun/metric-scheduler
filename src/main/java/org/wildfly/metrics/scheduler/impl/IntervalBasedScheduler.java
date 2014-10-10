@@ -28,6 +28,7 @@ import com.codahale.metrics.Timer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.metrics.scheduler.Task;
+import org.wildfly.metrics.scheduler.TaskCompletionHandler;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -53,21 +54,23 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
     private final ScheduledExecutorService executorService;
     private final List<ScheduledFuture> jobs;
-    private final DMRResponseHandler responseHandler;
     private final ConsoleReporter reporter;
     private final Timer requestTimer;
     private final Counter delayCounter;
     private final int poolSize;
     private final String host;
     private final int port;
+    private final TaskCompletionHandler<DMRResponse> completionHandler;
 
     private ConcurrentLinkedQueue<ModelControllerClient> connectionPool = new ConcurrentLinkedQueue<>();
 
-    public IntervalBasedScheduler(final int poolSize, String host, int port) {
+    public IntervalBasedScheduler(final int poolSize, String host, int port, TaskCompletionHandler<DMRResponse> completionHandler) {
 
         this.poolSize = poolSize;
         this.host = host;
         this.port = port;
+        this.completionHandler = completionHandler;
+
         this.executorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -77,7 +80,6 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         });
 
         this.jobs = new LinkedList<>();
-        this.responseHandler = new SystemOutHandler();
 
         // metrics
         MetricRegistry metrics = new MetricRegistry();
@@ -114,6 +116,8 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
         // schedule IO
         ReadAttributeOperationBuilder operationBuilder = new ReadAttributeOperationBuilder();
+        // TODO: with task groups we loose the task reference
+        // due to the composite operation
         for (TaskGroup group : groups) {
             jobs.add(
 
@@ -217,8 +221,13 @@ public class IntervalBasedScheduler extends AbstractScheduler {
                 // return to pool
                 connectionPool.add(client);
 
-                if (operationResult != null && responseHandler != null) {
-                    responseHandler.handle(operationResult);
+                if (operationResult != null) {
+
+                    //TODO: pass on task references
+                    if(DMRResponse.Status.SUCCESS == operationResult.getStatus())
+                        completionHandler.onCompleted(null, operationResult);
+                    else
+                        completionHandler.onFailed(null, new RuntimeException(operationResult.getErrorDescription()));
                 }
             }
         }

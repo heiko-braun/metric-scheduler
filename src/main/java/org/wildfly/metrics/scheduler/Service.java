@@ -3,27 +3,36 @@ package org.wildfly.metrics.scheduler;
 import org.wildfly.metrics.scheduler.cfg.Address;
 import org.wildfly.metrics.scheduler.cfg.Configuration;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
+import org.wildfly.metrics.scheduler.impl.DMRResponse;
 import org.wildfly.metrics.scheduler.impl.IntervalBasedScheduler;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The actual agenda service that creates task lists from configuration
- * and schedules work through a {@link Scheduler}
+ * The core service that creates task lists from a configuration
+ * and schedules work through a {@link Scheduler}.
+ * The resulting data will be pushed to the {@link org.wildfly.metrics.scheduler.StorageAdapter}
  *
  * @author Heiko Braun
  * @since 10/10/14
  */
-public class Service implements TopologyChangeListener {
+public class Service implements TopologyChangeListener{
 
     private final Configuration configuration;
     private final Scheduler scheduler;
+    private final TaskCompletionHandler<DMRResponse> completionHandler;
 
     public Service(Configuration configuration) {
 
         this.configuration = configuration;
-        this.scheduler = new IntervalBasedScheduler(2, configuration.getHost(), configuration.getPort());
+        this.completionHandler = new DebugCompletionHandler();
+        this.scheduler = new IntervalBasedScheduler(
+                2, // threads
+                configuration.getHost(),
+                configuration.getPort(),
+                completionHandler
+        );
     }
 
     void start() {
@@ -52,5 +61,17 @@ public class Service implements TopologyChangeListener {
         // shutdown scheduler
         // recalculate tasks
         // restart scheduler
+    }
+
+    class DebugCompletionHandler implements TaskCompletionHandler<DMRResponse> {
+        @Override
+        public void onCompleted(Task t, DMRResponse data) {
+            System.out.println(data.getResult());
+        }
+
+        @Override
+        public void onFailed(Task t, Throwable e) {
+            System.out.println("Task failed: "+e.getMessage());
+        }
     }
 }

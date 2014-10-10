@@ -49,21 +49,27 @@ public final class TestConfiguration implements ConfigLoader {
     public Configuration load() {
         List<ResourceRef> definitions = new ArrayList<>();
 
+        /*String address = "/subsystem=datasources/data-source=ExampleDS/statistics=pool";
 
-        for(int i=0; i<250; i++) {
-            String address = "/subsystem=datasources/data-source=ExampleDS/statistics=pool";
+        definitions.add(new ResourceRef(address, "CreatedCount", EACH_SECOND));
+        definitions.add(new ResourceRef(address, "DestroyedCount", EACH_SECOND));
 
-            definitions.add(new ResourceRef(address, "CreatedCount", EACH_SECOND));
-            definitions.add(new ResourceRef(address, "DestroyedCount", EACH_SECOND));
+        definitions.add(new ResourceRef(address, "TimedOut", Interval.TWO_SECONDS));
+        definitions.add(new ResourceRef(address, "InUseCount", Interval.TWO_SECONDS));
+        definitions.add(new ResourceRef(address, "AverageBlockingTime", Interval.TWO_SECONDS));
 
-            definitions.add(new ResourceRef(address, "TimedOut", Interval.TWO_SECONDS));
-            definitions.add(new ResourceRef(address, "InUseCount", Interval.TWO_SECONDS));
-            definitions.add(new ResourceRef(address, "AverageBlockingTime", Interval.TWO_SECONDS));
+        definitions.add(new ResourceRef(address, "AverageCreationTime", Interval.FIVE_SECONDS));
+        definitions.add(new ResourceRef(address, "AvailableCount", Interval.FIVE_SECONDS));
+        definitions.add(new ResourceRef(address, "ActiveCount", Interval.FIVE_SECONDS));*/
 
-            definitions.add(new ResourceRef(address, "AverageCreationTime", Interval.FIVE_SECONDS));
-            definitions.add(new ResourceRef(address, "AvailableCount", Interval.FIVE_SECONDS));
-            definitions.add(new ResourceRef(address, "ActiveCount", Interval.FIVE_SECONDS));
-        }
+
+        String vmAddress = "/core-service=platform-mbean/type=memory";
+
+        definitions.add(new ResourceRef(vmAddress, "heap-memory-usage", EACH_SECOND));
+        definitions.add(new ResourceRef(vmAddress, "non-heap-memory-usage", EACH_SECOND));
+
+        definitions.add(new ResourceRef("/core-service=platform-mbean/type=threading", "thread-count", Interval.FIVE_SECONDS));
+
 
         return new Configuration("dataSourceAgenda", "localhost", 9999, definitions);
     }
