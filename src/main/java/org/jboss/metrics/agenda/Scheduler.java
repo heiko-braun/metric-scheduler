@@ -30,7 +30,7 @@ public interface Scheduler {
 
     public enum State {RUNNING, STOPPED}
 
-    void start(Set<Operation> operations);
+    void start(Set<Task> operations);
 
     void stop();
 

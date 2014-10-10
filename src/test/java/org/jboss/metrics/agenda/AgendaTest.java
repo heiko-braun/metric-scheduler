@@ -8,7 +8,7 @@ public class AgendaTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void readonly() {
-        Agenda agenda = new Agenda("test", asList(TestData.fooTask()));
-        agenda.getTasks().remove(0);
+        /*Configuration agenda = new Configuration("test", asList(ConfigurationBuilder.fooTask()));
+        agenda.getResourceRefs().remove(0);*/
     }
 }

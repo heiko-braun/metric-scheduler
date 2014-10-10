@@ -21,16 +21,13 @@
  */
 package org.jboss.metrics.agenda.impl;
 
-import static java.util.Arrays.asList;
-
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.metrics.agenda.Operation;
 import org.jboss.metrics.agenda.OperationBuilder;
+import org.jboss.metrics.agenda.ResourceRef;
 import org.jboss.metrics.agenda.Task;
 import org.jboss.metrics.agenda.TaskGroup;
 import org.jboss.metrics.agenda.address.Address;
@@ -51,8 +48,8 @@ public class ReadAttributeOperationBuilder implements OperationBuilder {
 
 
         HashSet<Operation> operations = new HashSet<>();
-        for (Task task : group) {
-            ModelNode node = readAttribute(task);
+        for (Task t : group) {
+            ModelNode node = readAttribute(t);
             operations.add(new Operation(group.getInterval().millis(), node));
         }
 
@@ -77,7 +74,7 @@ public class ReadAttributeOperationBuilder implements OperationBuilder {
 
     private ModelNode readAttribute(Task task) {
         ModelNode node = new ModelNode();
-        Address address = Address.apply(task.getAddress());
+        Address address = task.getAddress();
         for (Address.Tuple tuple : address) {
             node.get("address").add(tuple.getKey(), tuple.getValue());
         }

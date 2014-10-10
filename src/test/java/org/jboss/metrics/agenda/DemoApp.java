@@ -23,15 +23,12 @@ package org.jboss.metrics.agenda;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.metrics.agenda.impl.IntervalBasedScheduler;
 import org.jboss.metrics.agenda.impl.IntervalGrouping;
 import org.jboss.metrics.agenda.impl.PrintOperationResult;
-import org.jboss.metrics.agenda.impl.ReadAttributeOperationBuilder;
 
 /**
  * @author Harald Pehl
@@ -40,23 +37,13 @@ public class DemoApp {
 
     public static void main(String[] args) throws Exception {
 
-        Agenda agenda = TestData.loadTestAgenda();
-        Set<TaskGroup> groups = new IntervalGrouping().apply(agenda.getTasks());
-        Set<Operation> operations = new HashSet<>();
+          // read configuration
+        Configuration configuration = ConfigurationBuilder.load();
 
-        ReadAttributeOperationBuilder operationBuilder = new ReadAttributeOperationBuilder();
-        for (TaskGroup group : groups) {
-            operations.addAll(operationBuilder.createOperation(group));
-        }
+        Service service = new Service(configuration);
 
-        System.out.println("<< Agenda Size: "+agenda.getTasks().size()+" >>");
-        System.out.println("<< Number of Task Groups: "+groups.size()+" >>");
-        System.out.println("<< Number of Operations: "+operations.size()+" >>");
-
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        Scheduler executor = new IntervalBasedScheduler(client, 5, new PrintOperationResult());
-        executor.start(operations);
+        service.start();
         SECONDS.sleep(10);
-        executor.stop();
+        service.stop();
     }
 }

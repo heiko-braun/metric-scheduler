@@ -26,34 +26,34 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A collection of {@link Task}s with a unique id.
+ * A collection of {@link ResourceRef}s with a unique id.
  *
  * @author Harald Pehl
  */
-public class Agenda {
+public class Configuration {
 
     private final String id;
-    private final List<Task> tasks;
+    private final List<ResourceRef> resourceRefs;
 
-    public Agenda(final String id, final List<Task> tasks) {
+    public Configuration(final String id, final List<ResourceRef> resourceRefs) {
         this.id = id;
-        this.tasks = new ArrayList<>();
+        this.resourceRefs = new ArrayList<>();
 
-        if (tasks != null) {
-            this.tasks.addAll(tasks);
+        if (resourceRefs != null) {
+            this.resourceRefs.addAll(resourceRefs);
         }
     }
 
     @Override
     public String toString() {
-        return "Agenda(" + id + ")";
+        return "Configuration(" + id + ")";
     }
 
     public String getId() {
         return id;
     }
 
-    public List<Task> getTasks() {
-        return Collections.unmodifiableList(tasks);
+    public List<ResourceRef> getResourceRefs() {
+        return Collections.unmodifiableList(resourceRefs);
     }
 }

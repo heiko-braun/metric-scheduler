@@ -29,5 +29,5 @@ import java.util.Set;
  */
 public interface TaskGrouping {
 
-    Set<TaskGroup> apply(List<Task> tasks);
+    Set<TaskGroup> apply(Set<Task> tasks);
 }

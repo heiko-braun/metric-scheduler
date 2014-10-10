@@ -21,6 +21,8 @@
  */
 package org.jboss.metrics.agenda;
 
+import org.jboss.metrics.agenda.address.Address;
+
 import static org.jboss.metrics.agenda.Interval.EACH_SECOND;
 
 import java.util.ArrayList;
@@ -29,19 +31,19 @@ import java.util.List;
 /**
  * @author Harald Pehl
  */
-public final class TestData {
+public final class ConfigurationBuilder {
 
-    private TestData() {}
+    private ConfigurationBuilder() {}
 
     public static Task fooTask() {
         return fooTask(EACH_SECOND);
     }
 
     public static Task fooTask(Interval interval) {
-        return new Task("/foo=bar", "baz", interval);
+        return new Task(Address.apply("/foo=bar"), "baz", interval);
     }
 
-    public static Agenda dataSourceAgenda() {
+   /* public static Agenda dataSourceAgenda() {
         List<Task> definitions = new ArrayList<>();
         String address = "/subsystem=datasources/data-source=ExampleDS/statistics=pool";
 
@@ -57,27 +59,27 @@ public final class TestData {
         definitions.add(new Task(address, "ActiveCount", Interval.FIVE_SECONDS));
 
         return new Agenda("dataSourceAgenda", definitions);
-    }
+    }*/
 
-    public static Agenda loadTestAgenda() {
-        List<Task> definitions = new ArrayList<>();
+    public static Configuration load() {
+        List<ResourceRef> definitions = new ArrayList<>();
 
 
         for(int i=0; i<250; i++) {
             String address = "/subsystem=datasources/data-source=ExampleDS/statistics=pool";
 
-            definitions.add(new Task(address, "CreatedCount", EACH_SECOND));
-            definitions.add(new Task(address, "DestroyedCount", EACH_SECOND));
+            definitions.add(new ResourceRef(address, "CreatedCount", EACH_SECOND));
+            definitions.add(new ResourceRef(address, "DestroyedCount", EACH_SECOND));
 
-            definitions.add(new Task(address, "TimedOut", Interval.TWO_SECONDS));
-            definitions.add(new Task(address, "InUseCount", Interval.TWO_SECONDS));
-            definitions.add(new Task(address, "AverageBlockingTime", Interval.TWO_SECONDS));
+            definitions.add(new ResourceRef(address, "TimedOut", Interval.EACH_SECOND));
+            definitions.add(new ResourceRef(address, "InUseCount", Interval.EACH_SECOND));
+            definitions.add(new ResourceRef(address, "AverageBlockingTime", Interval.EACH_SECOND));
 
-            definitions.add(new Task(address, "AverageCreationTime", Interval.FIVE_SECONDS));
-            definitions.add(new Task(address, "AvailableCount", Interval.FIVE_SECONDS));
-            definitions.add(new Task(address, "ActiveCount", Interval.FIVE_SECONDS));
+            definitions.add(new ResourceRef(address, "AverageCreationTime", Interval.EACH_SECOND));
+            definitions.add(new ResourceRef(address, "AvailableCount", Interval.EACH_SECOND));
+            definitions.add(new ResourceRef(address, "ActiveCount", Interval.EACH_SECOND));
         }
 
-        return new Agenda("dataSourceAgenda", definitions);
+        return new Configuration("dataSourceAgenda", definitions);
     }
 }

@@ -29,6 +29,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import org.jboss.metrics.agenda.Interval;
+import org.jboss.metrics.agenda.ResourceRef;
 import org.jboss.metrics.agenda.Task;
 import org.jboss.metrics.agenda.TaskGroup;
 import org.jboss.metrics.agenda.TaskGrouping;
@@ -39,12 +40,12 @@ import org.jboss.metrics.agenda.TaskGrouping;
 public class IntervalGrouping implements TaskGrouping {
 
     @Override
-    public Set<TaskGroup> apply(final List<Task> tasks) {
+    public Set<TaskGroup> apply(final Set<Task> tasks) {
         ImmutableListMultimap<Interval, Task> tasksByInterval = Multimaps
                 .index(tasks, new Function<Task, Interval>() {
                     @Override
-                    public Interval apply(final Task definition) {
-                        return definition.getInterval();
+                    public Interval apply(final Task task) {
+                        return task.getInterval();
                     }
                 });
 

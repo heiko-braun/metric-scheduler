@@ -27,13 +27,13 @@ public class TaskGroupTest {
     @Test(expected = UnsupportedOperationException.class)
     public void readonly() {
         TaskGroup group = new TaskGroup(EACH_SECOND);
-        group.addTask(TestData.fooTask(EACH_SECOND));
+        group.addTask(ConfigurationBuilder.fooTask(EACH_SECOND));
         group.iterator().remove();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void interval() {
         TaskGroup group = new TaskGroup(EACH_SECOND);
-        group.addTask(TestData.fooTask(EACH_MINUTE));
+        group.addTask(ConfigurationBuilder.fooTask(EACH_MINUTE));
     }
 }

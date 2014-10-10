@@ -27,12 +27,16 @@ import static org.jboss.metrics.agenda.Scheduler.State.RUNNING;
 import static org.jboss.metrics.agenda.Scheduler.State.STOPPED;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.ConsoleReporter;
@@ -45,11 +49,129 @@ import org.jboss.metrics.agenda.Operation;
 import org.jboss.metrics.agenda.OperationResult;
 import org.jboss.metrics.agenda.OperationResultConsumer;
 import org.jboss.metrics.agenda.Statistics;
+import org.jboss.metrics.agenda.Task;
+import org.jboss.metrics.agenda.TaskGroup;
 
 /**
  * @author Harald Pehl
  */
 public class IntervalBasedScheduler extends AbstractScheduler {
+
+    private final ScheduledExecutorService executorService;
+    private final List<ScheduledFuture> jobs;
+    private final OperationResultConsumer consumer;
+    private final ConsoleReporter reporter;
+    private final Timer stopwatch;
+    private final Counter delayed;
+    private final int poolSize;
+
+    private ConcurrentLinkedQueue<ModelControllerClient> connectionPool = new ConcurrentLinkedQueue<>();
+
+    public IntervalBasedScheduler(final int poolSize, final OperationResultConsumer consumer) {
+
+        this.poolSize = poolSize;
+        this.executorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                System.out.println("<< created new executor >>");
+                return new Thread(r);
+            }
+        });
+
+        this.jobs = new LinkedList<>();
+        this.consumer = consumer;
+
+        // metrics
+        MetricRegistry metrics = new MetricRegistry();
+        this.reporter = ConsoleReporter.forRegistry(metrics)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(MILLISECONDS)
+                .build();
+
+        this.stopwatch = metrics.timer(name("stopwatch"));
+        this.delayed = metrics.counter(name("delayed"));
+
+    }
+
+    @Override
+    public void start(Set<Task> tasks) {
+        verifyState(STOPPED);
+
+         // optimize task groups
+        Set<TaskGroup> groups = new IntervalGrouping().apply(tasks);
+
+        // create IO blocks
+        Set<Operation> operations = new HashSet<>();
+        ReadAttributeOperationBuilder operationBuilder = new ReadAttributeOperationBuilder();
+        for (TaskGroup group : groups) {
+            operations.addAll(operationBuilder.createOperation(group));
+        }
+
+        System.out.println("<< Number of Tasks: "+tasks.size()+" >>");
+        System.out.println("<< Number of Task Groups: "+groups.size()+" >>");
+        System.out.println("<< Number of Operations: "+operations.size()+" >>");
+
+        // populate pool
+        for (int i = 0; i < poolSize; i++) {
+            try {
+                connectionPool.add(
+                        ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999)
+                );
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+
+        // maintain job references
+        for (Operation operation : operations) {
+            jobs.add(
+
+                    // schedule tasks
+                    executorService.scheduleWithFixedDelay(
+                            new OperationExecution(operation),
+                            0, operation.getInterval(),
+                            MILLISECONDS
+                    )
+            );
+        }
+
+        pushState(RUNNING);
+    }
+
+    @Override
+    public void stop() {
+        verifyState(RUNNING);
+
+
+        try {
+            for (ScheduledFuture job : jobs) {
+                job.cancel(false);
+            }
+            executorService.shutdown();
+            executorService.awaitTermination(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+
+            // cleanup pool
+            for (ModelControllerClient client : connectionPool) {
+                try {
+                    client.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            };
+
+            pushState(STOPPED);
+            reporter.stop();
+            reporter.report();
+        }
+    }
+
+    @Override
+    public Statistics currentStats() {
+        return null;
+    }
 
     private class OperationExecution implements Runnable {
 
@@ -62,7 +184,12 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         @Override
         public void run() {
             OperationResult operationResult = null;
+            if(connectionPool.isEmpty())
+                throw new IllegalStateException("Connection pool expired!");
+            final ModelControllerClient client = connectionPool.poll();
+
             try {
+
                 Timer.Context context = stopwatch.time();
                 delayed.inc(); // assumption: every op is delayed or erroneous
                 ModelNode response = client.execute(operation.getModelNode());
@@ -83,85 +210,16 @@ public class IntervalBasedScheduler extends AbstractScheduler {
                 ModelNode exceptionModel = new ModelNode().get("failure-description").set(e.getMessage());
                 operationResult = new OperationResult(operation.getId(), exceptionModel, OperationResult.Status.FAILED);
             } finally {
+
+                // return to pool
+                connectionPool.add(client);
+
                 if (operationResult != null && consumer != null) {
                     consumer.consume(operationResult);
                 }
             }
         }
+
     }
 
-
-    public final static int DEFAULT_POOL_SIZE = 2;
-
-    private final ModelControllerClient client;
-    private final ScheduledExecutorService executorService;
-    private final List<ScheduledFuture> jobs;
-    private final OperationResultConsumer consumer;
-    private final ConsoleReporter reporter;
-    private final Timer stopwatch;
-    private final Counter delayed;
-
-    public IntervalBasedScheduler(final ModelControllerClient client) {
-        this(client, DEFAULT_POOL_SIZE, null);
-    }
-
-    public IntervalBasedScheduler(final ModelControllerClient client, final int poolSize,
-            final OperationResultConsumer consumer) {
-        this.client = client;
-        this.executorService = Executors.newScheduledThreadPool(poolSize);
-        this.jobs = new LinkedList<>();
-        this.consumer = consumer;
-
-        // metrics
-        MetricRegistry metrics = new MetricRegistry();
-        this.reporter = ConsoleReporter.forRegistry(metrics)
-                .convertRatesTo(TimeUnit.SECONDS)
-                .convertDurationsTo(MILLISECONDS)
-                .build();
-        this.stopwatch = metrics.timer(name("stopwatch"));
-        this.delayed = metrics.counter(name("delayed"));
-    }
-
-    @Override
-    public void start(Set<Operation> operations) {
-        verifyState(STOPPED);
-
-        for (Operation operation : operations) {
-            jobs.add(executorService.scheduleWithFixedDelay(new OperationExecution(operation), 0,
-                    operation.getInterval(), MILLISECONDS));
-        }
-
-        pushState(RUNNING);
-    }
-
-    @Override
-    public void stop() {
-        verifyState(RUNNING);
-
-        try {
-            for (ScheduledFuture job : jobs) {
-                job.cancel(false);
-            }
-            executorService.shutdown();
-            executorService.awaitTermination(2, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            if (client != null) {
-                try {
-                    client.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            pushState(STOPPED);
-            reporter.stop();
-            reporter.report();
-        }
-    }
-
-    @Override
-    public Statistics currentStats() {
-        return null;
-    }
 }

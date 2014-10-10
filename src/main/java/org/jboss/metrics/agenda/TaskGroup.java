@@ -21,13 +21,13 @@
  */
 package org.jboss.metrics.agenda;
 
+import com.google.common.collect.Iterators;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
-
-import com.google.common.collect.Iterators;
 
 /**
  * @author Harald Pehl
@@ -87,8 +87,8 @@ public class TaskGroup implements Iterable<Task> {
     }
 
     public boolean addTasks(final Collection<? extends Task> collection) {
-        for (Task task : collection) {
-            verifyInterval(task);
+        for (Task t: collection) {
+            verifyInterval(t);
         }
         return tasks.addAll(collection);
     }
