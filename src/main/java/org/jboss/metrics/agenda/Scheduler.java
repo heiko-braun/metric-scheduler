@@ -24,6 +24,9 @@ package org.jboss.metrics.agenda;
 import java.util.List;
 
 /**
+ * Performs the actual work collecting the data from the monitored resources.
+ * Used by the main {@link org.jboss.metrics.agenda.Service}
+ *
  * @author Harald Pehl
  */
 public interface Scheduler {
@@ -33,9 +36,4 @@ public interface Scheduler {
     void schedule(List<Task> operations);
 
     void shutdown();
-
-    /**
-     * Returns the current statistics. This method must not block the executor and return almost instantly.
-     */
-    Statistics currentStats();
 }

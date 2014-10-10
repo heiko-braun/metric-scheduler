@@ -19,41 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.metrics.agenda;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+package org.jboss.metrics.agenda.impl;
 
 /**
- * A collection of {@link ResourceRef}s with a unique id.
- *
  * @author Harald Pehl
  */
-public class Configuration {
+public interface OperationResultConsumer {
 
-    private final String id;
-    private final List<ResourceRef> resourceRefs;
-
-    public Configuration(final String id, final List<ResourceRef> resourceRefs) {
-        this.id = id;
-        this.resourceRefs = new ArrayList<>();
-
-        if (resourceRefs != null) {
-            this.resourceRefs.addAll(resourceRefs);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "Configuration(" + id + ")";
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public List<ResourceRef> getResourceRefs() {
-        return Collections.unmodifiableList(resourceRefs);
-    }
+    void consume(DMRResponse operationResult);
 }

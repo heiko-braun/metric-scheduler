@@ -21,14 +21,9 @@
  */
 package org.jboss.metrics.agenda;
 
+import org.jboss.metrics.agenda.cfg.Configuration;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.jboss.metrics.agenda.impl.IntervalBasedScheduler;
-import org.jboss.metrics.agenda.impl.IntervalGrouping;
-import org.jboss.metrics.agenda.impl.PrintOperationResult;
 
 /**
  * @author Harald Pehl
@@ -38,7 +33,7 @@ public class DemoApp {
     public static void main(String[] args) throws Exception {
 
         // create configuration
-        Configuration configuration = ConfigurationBuilder.load();
+        Configuration configuration = new TestConfiguration().load();
 
         // create service
         Service service = new Service(configuration);

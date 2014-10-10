@@ -27,18 +27,12 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
-import org.jboss.metrics.agenda.DMROperation;
-import org.jboss.metrics.agenda.OperationResult;
-import org.jboss.metrics.agenda.OperationResultConsumer;
-import org.jboss.metrics.agenda.Statistics;
 import org.jboss.metrics.agenda.Task;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -60,8 +54,8 @@ public class IntervalBasedScheduler extends AbstractScheduler {
     private final List<ScheduledFuture> jobs;
     private final OperationResultConsumer consumer;
     private final ConsoleReporter reporter;
-    private final Timer stopwatch;
-    private final Counter delayed;
+    private final Timer requestTimer;
+    private final Counter delayCounter;
     private final int poolSize;
 
     private ConcurrentLinkedQueue<ModelControllerClient> connectionPool = new ConcurrentLinkedQueue<>();
@@ -87,8 +81,8 @@ public class IntervalBasedScheduler extends AbstractScheduler {
                 .convertDurationsTo(MILLISECONDS)
                 .build();
 
-        this.stopwatch = metrics.timer(name("stopwatch"));
-        this.delayed = metrics.counter(name("delayed"));
+        this.requestTimer = metrics.timer(name("requestTimer"));
+        this.delayCounter = metrics.counter(name("delayCounter"));
 
     }
 
@@ -99,19 +93,10 @@ public class IntervalBasedScheduler extends AbstractScheduler {
          // optimize task groups
         List<TaskGroup> groups = new IntervalGrouping().apply(tasks);
 
-        // create IO blocks
-        Set<DMROperation> operations = new HashSet<>();
-        ReadAttributeOperationBuilder operationBuilder = new ReadAttributeOperationBuilder();
-        for (TaskGroup group : groups) {
-            operations.add(operationBuilder.createOperation(group));
-        }
-
-
         System.out.println("<< Number of Tasks: "+tasks.size()+" >>");
         System.out.println("<< Number of Task Groups: "+groups.size()+" >>");
-        System.out.println("<< Number of Operations: "+operations.size()+" >>");
 
-        // populate pool
+        // populate connection pool
         for (int i = 0; i < poolSize; i++) {
             try {
                 connectionPool.add(
@@ -122,14 +107,15 @@ public class IntervalBasedScheduler extends AbstractScheduler {
             }
         }
 
-        // schedule jobs
-        for (DMROperation operation : operations) {
+        // schedule IO
+        ReadAttributeOperationBuilder operationBuilder = new ReadAttributeOperationBuilder();
+        for (TaskGroup group : groups) {
             jobs.add(
 
                     // schedule tasks
                     executorService.scheduleWithFixedDelay(
-                            new IO(operation),
-                            0, operation.getInterval(),
+                            new IO(operationBuilder.createOperation(group)),
+                            group.getOffsetMillis(), group.getInterval().millis(),
                             MILLISECONDS
                     )
             );
@@ -149,6 +135,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
             }
             executorService.shutdown();
             executorService.awaitTermination(2, TimeUnit.SECONDS);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
@@ -168,47 +155,58 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         }
     }
 
-    @Override
-    public Statistics currentStats() {
-        return null;
-    }
-
     private class IO implements Runnable {
 
-        private final DMROperation operation;
+        private static final String OUTCOME = "outcome";
+        private static final String RESULT = "result";
+        private static final String FAILURE_DESCRIPTION = "failure-description";
+        private static final String SUCCESS = "success";
 
-        private IO(final DMROperation operation) {
+        private final DMRRequest operation;
+
+        private IO(final DMRRequest operation) {
             this.operation = operation;
         }
 
         @Override
         public void run() {
-            OperationResult operationResult = null;
+            DMRResponse operationResult = null;
             if(connectionPool.isEmpty())
                 throw new IllegalStateException("Connection pool expired!");
             final ModelControllerClient client = connectionPool.poll();
 
             try {
 
-                Timer.Context context = stopwatch.time();
-                delayed.inc(); // assumption: every op is delayed or erroneous
+                Timer.Context requestContext = requestTimer.time();
+                delayCounter.inc(); // assumption: every op is delayed or erroneous
                 ModelNode response = client.execute(operation.getModelNode());
-                long durationMs = context.stop() / 1000000;
+                long durationMs = requestContext.stop() / 1000000;
 
-                String outcome = response.get("outcome").asString();
-                if ("success".equals(outcome)) {
+                String outcome = response.get(OUTCOME).asString();
+                if (SUCCESS.equals(outcome))
+                {
+
                     if (durationMs < operation.getInterval()) {
-                        delayed.dec(); // not delayed
+                        delayCounter.dec(); // not delayed
                     }
-                    operationResult = new OperationResult(operation.getId(), response.get("result"),
-                            OperationResult.Status.SUCCESS);
+
+                    operationResult = new DMRResponse(
+                            operation.getId(),
+                            response.get(RESULT),
+                            DMRResponse.Status.SUCCESS
+                    );
+
                 } else {
-                    operationResult = new OperationResult(operation.getId(), response.get("failure-description"),
-                            OperationResult.Status.FAILED);
+                    operationResult = new DMRResponse(
+                            operation.getId(),
+                            response.get(FAILURE_DESCRIPTION),
+                            DMRResponse.Status.FAILED
+                    );
                 }
+
             } catch (IOException e) {
-                ModelNode exceptionModel = new ModelNode().get("failure-description").set(e.getMessage());
-                operationResult = new OperationResult(operation.getId(), exceptionModel, OperationResult.Status.FAILED);
+                ModelNode exceptionModel = new ModelNode().get(FAILURE_DESCRIPTION).set(e.getMessage());
+                operationResult = new DMRResponse(operation.getId(), exceptionModel, DMRResponse.Status.FAILED);
             } finally {
 
                 // return to pool

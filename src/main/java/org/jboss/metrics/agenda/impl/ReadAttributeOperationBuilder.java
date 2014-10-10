@@ -22,9 +22,8 @@
 package org.jboss.metrics.agenda.impl;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.metrics.agenda.DMROperation;
 import org.jboss.metrics.agenda.Task;
-import org.jboss.metrics.agenda.address.Address;
+import org.jboss.metrics.agenda.cfg.Address;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ import java.util.List;
 public class ReadAttributeOperationBuilder implements OperationBuilder {
 
     @Override
-    public DMROperation createOperation(final TaskGroup group) {
+    public DMRRequest createOperation(final TaskGroup group) {
 
         if (group.isEmpty()) {
             throw new IllegalArgumentException("Empty groups are not allowed");
@@ -51,7 +50,7 @@ public class ReadAttributeOperationBuilder implements OperationBuilder {
             steps.add(readAttribute(task));
         }
         comp.get("steps").set(steps);
-        DMROperation operation = new DMROperation(group.getInterval().millis(), comp);
+        DMRRequest operation = new DMRRequest(group.getInterval().millis(), comp);
 
         return operation;
 

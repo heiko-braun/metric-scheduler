@@ -1,12 +1,9 @@
 package org.jboss.metrics.agenda.impl;
 
-import static org.jboss.metrics.agenda.Interval.*;
+import static org.jboss.metrics.agenda.cfg.Interval.*;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.Set;
-
-import org.jboss.metrics.agenda.ResourceRef;
+import org.jboss.metrics.agenda.cfg.ResourceRef;
 
 import org.junit.Before;
 import org.junit.Test;

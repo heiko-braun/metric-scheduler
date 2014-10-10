@@ -1,6 +1,8 @@
 package org.jboss.metrics.agenda;
 
-import org.jboss.metrics.agenda.address.Address;
+import org.jboss.metrics.agenda.cfg.Address;
+import org.jboss.metrics.agenda.cfg.Configuration;
+import org.jboss.metrics.agenda.cfg.ResourceRef;
 import org.jboss.metrics.agenda.impl.IntervalBasedScheduler;
 import org.jboss.metrics.agenda.impl.PrintOperationResult;
 
@@ -8,13 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * The actual agenda service that creates task lists from configuration
+ * and schedules work through a {@link org.jboss.metrics.agenda.Scheduler}
+ *
  * @author Heiko Braun
  * @since 10/10/14
  */
-public class Service implements TopologyChangeListener{
+public class Service implements TopologyChangeListener {
 
     private final Configuration configuration;
-    private final IntervalBasedScheduler scheduler;
+    private final Scheduler scheduler;
 
     public Service(Configuration configuration) {
 

@@ -1,6 +1,6 @@
 package org.jboss.metrics.agenda.impl;
 
-import static org.jboss.metrics.agenda.Interval.EACH_SECOND;
+import static org.jboss.metrics.agenda.cfg.Interval.EACH_SECOND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

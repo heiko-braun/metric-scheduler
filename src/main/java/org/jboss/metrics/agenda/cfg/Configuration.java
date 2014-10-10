@@ -19,60 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.metrics.agenda;
+package org.jboss.metrics.agenda.cfg;
 
-import org.jboss.dmr.ModelNode;
+import org.jboss.metrics.agenda.cfg.ResourceRef;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * An executable operation holding an unique id and a {@link org.jboss.dmr.ModelNode} model node.
+ * A collection of {@link org.jboss.metrics.agenda.cfg.ResourceRef}s with a unique id.
  *
  * @author Harald Pehl
  */
-public class DMROperation {
+public class Configuration {
 
     private final String id;
-    private final long interval;
-    private final ModelNode modelNode;
+    private final List<ResourceRef> resourceRefs;
 
-    public DMROperation(final long interval, final ModelNode modelNode) {
-        this.interval = interval;
-        this.id = UUID.randomUUID().toString();
-        this.modelNode = modelNode;
-    }
+    public Configuration(final String id, final List<ResourceRef> resourceRefs) {
+        this.id = id;
+        this.resourceRefs = new ArrayList<>();
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) { return true; }
-        if (!(o instanceof DMROperation)) { return false; }
-
-        DMROperation operation = (DMROperation) o;
-
-        if (!id.equals(operation.id)) { return false; }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
+        if (resourceRefs != null) {
+            this.resourceRefs.addAll(resourceRefs);
+        }
     }
 
     @Override
     public String toString() {
-        return "Operation(" + id + ", " + interval + "ms)";
+        return "Configuration(" + id + ")";
     }
 
     public String getId() {
         return id;
     }
 
-    public long getInterval() {
-        return interval;
-    }
-
-    public ModelNode getModelNode() {
-        return modelNode;
+    public List<ResourceRef> getResourceRefs() {
+        return Collections.unmodifiableList(resourceRefs);
     }
 }

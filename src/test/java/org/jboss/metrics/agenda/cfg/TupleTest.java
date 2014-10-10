@@ -1,8 +1,8 @@
-package org.jboss.metrics.agenda.address;
+package org.jboss.metrics.agenda.cfg;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jboss.metrics.agenda.address.Address.Tuple;
+import org.jboss.metrics.agenda.cfg.Address.Tuple;
 import org.junit.Test;
 
 public class TupleTest {

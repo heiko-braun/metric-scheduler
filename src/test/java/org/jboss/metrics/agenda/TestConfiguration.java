@@ -21,9 +21,13 @@
  */
 package org.jboss.metrics.agenda;
 
-import org.jboss.metrics.agenda.address.Address;
+import org.jboss.metrics.agenda.cfg.Address;
+import org.jboss.metrics.agenda.cfg.ConfigLoader;
+import org.jboss.metrics.agenda.cfg.Configuration;
+import org.jboss.metrics.agenda.cfg.Interval;
+import org.jboss.metrics.agenda.cfg.ResourceRef;
 
-import static org.jboss.metrics.agenda.Interval.EACH_SECOND;
+import static org.jboss.metrics.agenda.cfg.Interval.EACH_SECOND;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +35,8 @@ import java.util.List;
 /**
  * @author Harald Pehl
  */
-public final class ConfigurationBuilder {
+public final class TestConfiguration implements ConfigLoader {
 
-    private ConfigurationBuilder() {}
 
     public static Task fooTask() {
         return fooTask(EACH_SECOND);
@@ -60,11 +63,11 @@ public final class ConfigurationBuilder {
         return new Agenda("dataSourceAgenda", definitions);
     }*/
 
-    public static Configuration load() {
+    public Configuration load() {
         List<ResourceRef> definitions = new ArrayList<>();
 
 
-        for(int i=0; i<1; i++) {
+        for(int i=0; i<250; i++) {
             String address = "/subsystem=datasources/data-source=ExampleDS/statistics=pool";
 
             definitions.add(new ResourceRef(address, "CreatedCount", EACH_SECOND));

@@ -19,59 +19,60 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.metrics.agenda;
+package org.jboss.metrics.agenda.impl;
+
+import org.jboss.dmr.ModelNode;
+
+import java.util.UUID;
 
 /**
+ * An executable operation holding an unique id and a {@link org.jboss.dmr.ModelNode} model node.
+ *
  * @author Harald Pehl
  */
-public class ResourceRef {
+public class DMRRequest {
 
-    private final String address;
-    private final String attribute;
-    private final Interval interval;
+    private final String id;
+    private final long interval;
+    private final ModelNode modelNode;
 
-    public ResourceRef(final String address, final String attribute, final Interval interval) {
-        this.address = address;
-        this.attribute = attribute;
+    public DMRRequest(final long interval, final ModelNode modelNode) {
         this.interval = interval;
+        this.id = UUID.randomUUID().toString();
+        this.modelNode = modelNode;
     }
 
-   /* @Override
+    @Override
     public boolean equals(final Object o) {
         if (this == o) { return true; }
-        if (!(o instanceof Task)) { return false; }
+        if (!(o instanceof DMRRequest)) { return false; }
 
-        Task task = (Task) o;
+        DMRRequest operation = (DMRRequest) o;
 
-        if (!address.equals(task.address)) { return false; }
-        if (!attribute.equals(task.attribute)) { return false; }
-        if (interval != task.interval) { return false; }
+        if (!id.equals(operation.id)) { return false; }
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = address.hashCode();
-        result = 31 * result + attribute.hashCode();
-        result = 31 * result + interval.hashCode();
-        return result;
-    }*/
+        return id.hashCode();
+    }
 
     @Override
     public String toString() {
-        return "Task(" + address + ":" + attribute + ", " + interval + ")";
+        return "Operation(" + id + ", " + interval + "ms)";
     }
 
-    public String getAddress() {
-        return address;
+    public String getId() {
+        return id;
     }
 
-    public String getAttribute() {
-        return attribute;
-    }
-
-    public Interval getInterval() {
+    public long getInterval() {
         return interval;
+    }
+
+    public ModelNode getModelNode() {
+        return modelNode;
     }
 }

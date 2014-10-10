@@ -19,12 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.metrics.agenda;
+package org.jboss.metrics.agenda.cfg;
 
 /**
+ * A resource reference that is to be monitored.
+ *
  * @author Harald Pehl
  */
-public interface Statistics {
+public class ResourceRef {
 
-    // TODO Define some useful methods
+    private final String address;
+    private final String attribute;
+    private final Interval interval;
+
+    public ResourceRef(final String address, final String attribute, final Interval interval) {
+        this.address = address;
+        this.attribute = attribute;
+        this.interval = interval;
+    }
+
+    @Override
+    public String toString() {
+        return "Task(" + address + ":" + attribute + ", " + interval + ")";
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getAttribute() {
+        return attribute;
+    }
+
+    public Interval getInterval() {
+        return interval;
+    }
 }

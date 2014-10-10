@@ -22,15 +22,13 @@
 package org.jboss.metrics.agenda.impl;
 
 
-import org.jboss.metrics.agenda.DMROperation;
-
 /**
- * An interface to create {@link org.jboss.metrics.agenda.DMROperation}s out of
+ * An interface to create {@link DMRRequest}s out of
  * {@link org.jboss.metrics.agenda.impl.TaskGroup}s.
  *
  * @author Harald Pehl
  */
 public interface OperationBuilder {
 
-    DMROperation createOperation(TaskGroup group);
+    DMRRequest createOperation(TaskGroup group);
 }

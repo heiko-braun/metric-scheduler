@@ -21,7 +21,7 @@
  */
 package org.jboss.metrics.agenda.impl;
 
-import org.jboss.metrics.agenda.Interval;
+import org.jboss.metrics.agenda.cfg.Interval;
 import org.jboss.metrics.agenda.Task;
 
 import java.util.ArrayList;

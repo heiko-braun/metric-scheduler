@@ -19,14 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.metrics.agenda;
+package org.jboss.metrics.agenda.impl;
 
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Harald Pehl
  */
-public class OperationResult {
+public class DMRResponse {
 
     public enum Status {SUCCESS, FAILED, EXCEPTION}
 
@@ -35,7 +35,7 @@ public class OperationResult {
     private final ModelNode result;
     private final Status status;
 
-    public OperationResult(final String taskId, final ModelNode result, final Status status) {
+    public DMRResponse(final String taskId, final ModelNode result, final Status status) {
         this.taskId = taskId;
         this.result = result;
         this.status = status;
@@ -44,9 +44,9 @@ public class OperationResult {
     @Override
     public boolean equals(final Object o) {
         if (this == o) { return true; }
-        if (!(o instanceof OperationResult)) { return false; }
+        if (!(o instanceof DMRResponse)) { return false; }
 
-        OperationResult that = (OperationResult) o;
+        DMRResponse that = (DMRResponse) o;
 
         if (!result.equals(that.result)) { return false; }
         if (status != that.status) { return false; }

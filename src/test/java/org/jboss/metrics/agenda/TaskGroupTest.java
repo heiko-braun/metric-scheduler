@@ -1,12 +1,7 @@
 package org.jboss.metrics.agenda;
 
-import static org.jboss.metrics.agenda.Interval.EACH_MINUTE;
-import static org.jboss.metrics.agenda.Interval.EACH_SECOND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-
-
-import org.junit.Test;
 
 public class TaskGroupTest {
 

@@ -21,16 +21,13 @@
  */
 package org.jboss.metrics.agenda.impl;
 
-import org.jboss.metrics.agenda.OperationResult;
-import org.jboss.metrics.agenda.OperationResultConsumer;
-
 /**
  * @author Harald Pehl
  */
 public class PrintOperationResult implements OperationResultConsumer {
 
     @Override
-    public void consume(final OperationResult operationResult) {
+    public void consume(final DMRResponse operationResult) {
        /* System.out.println(operationResult);
         if(operationResult.getStatus() != OperationResult.Status.SUCCESS)
             System.out.println(operationResult.getResult().asString());*/

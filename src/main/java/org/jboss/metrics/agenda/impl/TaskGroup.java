@@ -22,7 +22,7 @@
 package org.jboss.metrics.agenda.impl;
 
 import com.google.common.collect.Iterators;
-import org.jboss.metrics.agenda.Interval;
+import org.jboss.metrics.agenda.cfg.Interval;
 import org.jboss.metrics.agenda.Task;
 
 import java.util.Collection;
