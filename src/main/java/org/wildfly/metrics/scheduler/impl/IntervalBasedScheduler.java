@@ -116,9 +116,6 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         }
 
         // schedule IO
-
-        // TODO: with task groups we loose the task reference
-        // due to the composite operation
         for (TaskGroup group : groups) {
             jobs.add(
 
@@ -216,6 +213,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
 
                 } else {
+                    // TODO: can we identify which task exactly failed?
                   completionHandler.onFailed(null, new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
                 }
 
