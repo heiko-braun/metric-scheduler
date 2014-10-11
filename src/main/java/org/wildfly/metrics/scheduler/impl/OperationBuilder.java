@@ -22,13 +22,14 @@
 package org.wildfly.metrics.scheduler.impl;
 
 
+import org.jboss.dmr.ModelNode;
+
 /**
- * An interface to create {@link DMRRequest}s out of
- * {@link TaskGroup}s.
+ * An interface to create operations ({@link ModelNode}'s) from {@link TaskGroup}s.
  *
  * @author Harald Pehl
  */
 public interface OperationBuilder {
 
-    DMRRequest createOperation(TaskGroup group);
+    ModelNode createOperation(TaskGroup group);
 }

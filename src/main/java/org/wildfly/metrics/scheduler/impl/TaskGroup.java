@@ -28,6 +28,7 @@ import org.wildfly.metrics.scheduler.Task;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,13 +40,13 @@ class TaskGroup implements Iterable<Task> {
     private final String id; // to uniquely reference this group
     private final Interval interval; // impacts thread scheduling
     private final long offsetMillis;
-    private final Set<Task> tasks;
+    private final LinkedList<Task> tasks;
 
     public TaskGroup(final Interval interval) {
         this.offsetMillis = 0;
         this.id = UUID.randomUUID().toString();
         this.interval = interval;
-        this.tasks = new HashSet<>();
+        this.tasks = new LinkedList<>();
     }
 
     public void addTask(Task task) {
@@ -85,5 +86,9 @@ class TaskGroup implements Iterable<Task> {
 
     public long getOffsetMillis() {
         return offsetMillis;
+    }
+
+    public Task getTask(int i) {
+        return tasks.get(i);
     }
 }

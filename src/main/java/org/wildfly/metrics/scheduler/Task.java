@@ -32,4 +32,12 @@ public class Task {
     public Interval getInterval() {
         return interval;
     }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "address=" + address +
+                ", attribute='" + attribute + '\'' +
+                '}';
+    }
 }

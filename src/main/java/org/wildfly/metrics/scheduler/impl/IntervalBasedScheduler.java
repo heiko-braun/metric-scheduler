@@ -27,6 +27,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.wildfly.metrics.scheduler.Task;
 import org.wildfly.metrics.scheduler.TaskCompletionHandler;
 
@@ -60,11 +61,11 @@ public class IntervalBasedScheduler extends AbstractScheduler {
     private final int poolSize;
     private final String host;
     private final int port;
-    private final TaskCompletionHandler<DMRResponse> completionHandler;
+    private final TaskCompletionHandler<ModelNode> completionHandler;
 
     private ConcurrentLinkedQueue<ModelControllerClient> connectionPool = new ConcurrentLinkedQueue<>();
 
-    public IntervalBasedScheduler(final int poolSize, String host, int port, TaskCompletionHandler<DMRResponse> completionHandler) {
+    public IntervalBasedScheduler(final int poolSize, String host, int port, TaskCompletionHandler<ModelNode> completionHandler) {
 
         this.poolSize = poolSize;
         this.host = host;
@@ -115,7 +116,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         }
 
         // schedule IO
-        ReadAttributeOperationBuilder operationBuilder = new ReadAttributeOperationBuilder();
+
         // TODO: with task groups we loose the task reference
         // due to the composite operation
         for (TaskGroup group : groups) {
@@ -123,7 +124,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
                     // schedule tasks
                     executorService.scheduleWithFixedDelay(
-                            new IO(operationBuilder.createOperation(group)),
+                            new IO(group),
                             group.getOffsetMillis(), group.getInterval().millis(),
                             MILLISECONDS
                     )
@@ -171,15 +172,19 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         private static final String FAILURE_DESCRIPTION = "failure-description";
         private static final String SUCCESS = "success";
 
-        private final DMRRequest operation;
+        private final TaskGroup group;
+        private final ModelNode operation;
 
-        private IO(final DMRRequest operation) {
-            this.operation = operation;
+        private IO(TaskGroup group) {
+            this.group = group;
+
+            // for the IO lifetime the operation is immutable and can be re-used
+            this.operation = new ReadAttributeOperationBuilder().createOperation(group);
         }
 
         @Override
         public void run() {
-            DMRResponse operationResult = null;
+
             if(connectionPool.isEmpty())
                 throw new IllegalStateException("Connection pool expired!");
             final ModelControllerClient client = connectionPool.poll();
@@ -188,47 +193,39 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
                 Timer.Context requestContext = requestTimer.time();
                 delayCounter.inc(); // assumption: every op is delayed or erroneous
-                ModelNode response = client.execute(operation.getModelNode());
+                ModelNode response = client.execute(operation);
                 long durationMs = requestContext.stop() / 1000000;
 
                 String outcome = response.get(OUTCOME).asString();
                 if (SUCCESS.equals(outcome))
                 {
 
-                    if (durationMs < operation.getInterval()) {
+                    if (durationMs < group.getInterval().millis()) {
                         delayCounter.dec(); // not delayed
                     }
 
-                    operationResult = new DMRResponse(
-                            operation.getId(),
-                            response.get(RESULT),
-                            DMRResponse.Status.SUCCESS
-                    );
+                    List<Property> steps = response.get(RESULT).asPropertyList();
+                    assert steps.size() == group.size() : "group structure doesn't match actual response structure";
+
+                    int i=0;
+                    for (Property step : steps) {
+                        Task task = group.getTask(i);
+                        completionHandler.onCompleted(task, step.getValue());
+                        i++;
+                    }
+
 
                 } else {
-                    operationResult = new DMRResponse(
-                            operation.getId(),
-                            response.get(FAILURE_DESCRIPTION),
-                            DMRResponse.Status.FAILED
-                    );
+                  completionHandler.onFailed(null, new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
                 }
 
             } catch (IOException e) {
-                ModelNode exceptionModel = new ModelNode().get(FAILURE_DESCRIPTION).set(e.getMessage());
-                operationResult = new DMRResponse(operation.getId(), exceptionModel, DMRResponse.Status.FAILED);
+                completionHandler.onFailed(null, e);
             } finally {
 
                 // return to pool
                 connectionPool.add(client);
 
-                if (operationResult != null) {
-
-                    //TODO: pass on task references
-                    if(DMRResponse.Status.SUCCESS == operationResult.getStatus())
-                        completionHandler.onCompleted(null, operationResult);
-                    else
-                        completionHandler.onFailed(null, new RuntimeException(operationResult.getErrorDescription()));
-                }
             }
         }
 

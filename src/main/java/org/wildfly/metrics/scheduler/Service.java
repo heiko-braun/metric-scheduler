@@ -1,9 +1,9 @@
 package org.wildfly.metrics.scheduler;
 
+import org.jboss.dmr.ModelNode;
 import org.wildfly.metrics.scheduler.cfg.Address;
 import org.wildfly.metrics.scheduler.cfg.Configuration;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
-import org.wildfly.metrics.scheduler.impl.DMRResponse;
 import org.wildfly.metrics.scheduler.impl.IntervalBasedScheduler;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class Service implements TopologyChangeListener{
 
     private final Configuration configuration;
     private final Scheduler scheduler;
-    private final TaskCompletionHandler<DMRResponse> completionHandler;
+    private final TaskCompletionHandler<ModelNode> completionHandler;
 
     public Service(Configuration configuration) {
 
@@ -63,10 +63,10 @@ public class Service implements TopologyChangeListener{
         // restart scheduler
     }
 
-    class DebugCompletionHandler implements TaskCompletionHandler<DMRResponse> {
+    class DebugCompletionHandler implements TaskCompletionHandler<ModelNode> {
         @Override
-        public void onCompleted(Task t, DMRResponse data) {
-            System.out.println(data.getResult());
+        public void onCompleted(Task t, ModelNode data) {
+            System.out.println(t + " > "+ data);
         }
 
         @Override

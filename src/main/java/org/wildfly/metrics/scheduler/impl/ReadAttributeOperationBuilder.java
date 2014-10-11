@@ -36,7 +36,7 @@ import java.util.List;
 public class ReadAttributeOperationBuilder implements OperationBuilder {
 
     @Override
-    public DMRRequest createOperation(final TaskGroup group) {
+    public ModelNode createOperation(final TaskGroup group) {
 
         if (group.isEmpty()) {
             throw new IllegalArgumentException("Empty groups are not allowed");
@@ -50,9 +50,8 @@ public class ReadAttributeOperationBuilder implements OperationBuilder {
             steps.add(readAttribute(task));
         }
         comp.get("steps").set(steps);
-        DMRRequest operation = new DMRRequest(group.getInterval().millis(), comp);
 
-        return operation;
+        return comp;
 
     }
 
