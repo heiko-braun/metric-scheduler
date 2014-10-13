@@ -21,7 +21,7 @@
  */
 package org.wildfly.metrics.scheduler.polling;
 
-import org.jboss.dmr.ModelNode;
+import org.wildfly.metrics.scheduler.storage.Sample;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public interface Scheduler {
      * Callback for completed tasks
      */
     interface CompletionHandler {
-        void onCompleted(Task t, ModelNode data);
-        void onFailed(TaskGroup g, Throwable e);
+        void onCompleted(Sample sample);
+        void onFailed(Throwable e);
     }
 }

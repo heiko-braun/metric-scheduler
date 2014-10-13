@@ -13,8 +13,11 @@ import org.wildfly.metrics.scheduler.polling.Task;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
+ * Pushes the data to RHQ metrics.
+ *
  * @author Heiko Braun
  * @since 13/10/14
  */
@@ -23,15 +26,17 @@ public class RHQStorageAdapter implements StorageAdapter {
     private HttpClient httpclient = new DefaultHttpClient();
 
     @Override
-    public void store(Task task, String value) {
-
+    public void store(Set<Sample> samples) {
 
         try {
-            String source = "localhost."+task.getAttribute();
-            long now = System.currentTimeMillis();
-
             List<SingleMetric> metrics = new ArrayList<>();
-            metrics.add(new SingleMetric(source, now, Double.valueOf(value)));
+
+            for (Sample sample : samples) {
+                Task task = sample.getTask();
+                String source = "localhost."+task.getAttribute();
+                metrics.add(new SingleMetric(source, sample.getTimestamp(), sample.getValue()));
+            }
+
 
             // If we have data, send it to the RHQ Metrics server
             if (metrics.size()>0) {

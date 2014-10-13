@@ -1,11 +1,11 @@
 package org.wildfly.metrics.scheduler.storage;
 
-import org.wildfly.metrics.scheduler.polling.Task;
+import java.util.Set;
 
 /**
  * @author Heiko Braun
  * @since 10/10/14
  */
 public interface StorageAdapter {
-    void store(Task task, String value);
+    void store(Set<Sample> samples);
 }

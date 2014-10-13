@@ -26,6 +26,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.wildfly.metrics.scheduler.Monitor;
+import org.wildfly.metrics.scheduler.storage.Sample;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -220,19 +221,32 @@ public class IntervalBasedScheduler extends AbstractScheduler {
                     int i=0;
                     for (Property step : steps) {
                         Task task = group.getTask(i);
-                        completionHandler.onCompleted(task, step.getValue());
+
+                        // deconstruct model node
+                        ModelNode data = step.getValue();
+                        Double value = null;
+                        if(task.getSubref()!=null)
+                        {
+                            value = data.get(RESULT).get(task.getSubref()).asDouble();
+                        }
+                        else
+                        {
+                            value = data.get(RESULT).asDouble();
+                        }
+
+                        completionHandler.onCompleted(new Sample(task, value));
                         i++;
                     }
 
 
                 } else {
                     monitor.getErrorCounter().inc();
-                    completionHandler.onFailed(group, new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
+                    completionHandler.onFailed(new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
                 }
 
             } catch (IOException e) {
                 monitor.getErrorCounter().inc();
-                completionHandler.onFailed(group, e);
+                completionHandler.onFailed(e);
             } finally {
 
                 // return to pool

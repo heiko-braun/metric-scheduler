@@ -3,11 +3,13 @@ package org.wildfly.metrics.scheduler.storage;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Serie;
-import org.wildfly.metrics.scheduler.polling.Task;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * Pushes the data to Influx.
+ *
  * @author Heiko Braun
  * @since 13/10/14
  */
@@ -20,16 +22,23 @@ public class InfluxStorageAdapter implements StorageAdapter {
     }
 
     @Override
-    public void store(Task task, String value) {
+    public void store(Set<Sample> samples) {
 
         try {
 
-            Serie dataPoints = new Serie.Builder(task.getAttribute())
-                    .columns("sample")
-                    .values(Double.valueOf(value))
-                    .build();
+            Serie[] series = new Serie[samples.size()];
+            int i=0;
+            for (Sample sample : samples) {
+                Serie dataPoint = new Serie.Builder(sample.getTask().getAttribute())
+                        .columns("sample")
+                        .values(sample.getValue())
+                        .build();
 
-            this.influxDB.write("wildfly", TimeUnit.MILLISECONDS, dataPoints);
+                series[i] = dataPoint;
+                i++;
+            }
+
+            this.influxDB.write("wildfly", TimeUnit.MILLISECONDS, series);
 
         } catch (Throwable t) {
             t.printStackTrace();
