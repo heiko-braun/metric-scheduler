@@ -1,5 +1,7 @@
 package org.wildfly.metrics.scheduler;
 
+import org.wildfly.metrics.scheduler.impl.Task;
+
 /**
  * @author Heiko Braun
  * @since 10/10/14

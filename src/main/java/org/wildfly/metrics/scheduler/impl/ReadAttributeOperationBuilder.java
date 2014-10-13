@@ -22,7 +22,6 @@
 package org.wildfly.metrics.scheduler.impl;
 
 import org.jboss.dmr.ModelNode;
-import org.wildfly.metrics.scheduler.Task;
 import org.wildfly.metrics.scheduler.cfg.Address;
 
 import java.util.ArrayList;

@@ -32,13 +32,11 @@ import java.util.List;
  */
 public class Configuration {
 
-    private final String id;
     private final List<ResourceRef> resourceRefs;
     private String host;
     private int port;
 
-    public Configuration(final String id, String host, int port, final List<ResourceRef> resourceRefs) {
-        this.id = id;
+    public Configuration(String host, int port, final List<ResourceRef> resourceRefs) {
         this.host = host;
         this.port = port;
         this.resourceRefs = new ArrayList<>();
@@ -46,15 +44,6 @@ public class Configuration {
         if (resourceRefs != null) {
             this.resourceRefs.addAll(resourceRefs);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Configuration(" + id + ")";
-    }
-
-    public String getId() {
-        return id;
     }
 
     public List<ResourceRef> getResourceRefs() {

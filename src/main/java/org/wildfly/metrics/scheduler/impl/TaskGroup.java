@@ -23,13 +23,10 @@ package org.wildfly.metrics.scheduler.impl;
 
 import com.google.common.collect.Iterators;
 import org.wildfly.metrics.scheduler.cfg.Interval;
-import org.wildfly.metrics.scheduler.Task;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Set;
 import java.util.UUID;
 
 /**

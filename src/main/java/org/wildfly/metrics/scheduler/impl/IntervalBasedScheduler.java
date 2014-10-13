@@ -28,7 +28,6 @@ import com.codahale.metrics.Timer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.wildfly.metrics.scheduler.Task;
 import org.wildfly.metrics.scheduler.TaskCompletionHandler;
 
 import java.io.IOException;
@@ -214,6 +213,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
                 } else {
                     // TODO: can we identify which task exactly failed?
+                    System.out.println(response);
                   completionHandler.onFailed(null, new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
                 }
 

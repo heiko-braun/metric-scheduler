@@ -26,6 +26,7 @@ import org.wildfly.metrics.scheduler.cfg.ConfigLoader;
 import org.wildfly.metrics.scheduler.cfg.Configuration;
 import org.wildfly.metrics.scheduler.cfg.Interval;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
+import org.wildfly.metrics.scheduler.impl.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +72,6 @@ public final class TestConfiguration implements ConfigLoader {
         definitions.add(new ResourceRef("/core-service=platform-mbean/type=threading", "thread-count", Interval.FIVE_SECONDS));
 
 
-        return new Configuration("dataSourceAgenda", "localhost", 9999, definitions);
+        return new Configuration("localhost", 9999, definitions);
     }
 }

@@ -5,6 +5,7 @@ import org.wildfly.metrics.scheduler.cfg.Address;
 import org.wildfly.metrics.scheduler.cfg.Configuration;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
 import org.wildfly.metrics.scheduler.impl.IntervalBasedScheduler;
+import org.wildfly.metrics.scheduler.impl.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,22 @@ public class Service implements TopologyChangeListener{
 
         this.configuration = configuration;
         this.completionHandler = new DebugCompletionHandler();
+        this.scheduler = new IntervalBasedScheduler(
+                2, // threads
+                configuration.getHost(),
+                configuration.getPort(),
+                completionHandler
+        );
+    }
+
+    /**
+     * Allows to override the completaiton handler
+     * @param configuration
+     * @param completionHandler
+     */
+    Service(Configuration configuration, TaskCompletionHandler<ModelNode> completionHandler) {
+        this.configuration = configuration;
+        this.completionHandler = completionHandler;
         this.scheduler = new IntervalBasedScheduler(
                 2, // threads
                 configuration.getHost(),
@@ -74,4 +91,6 @@ public class Service implements TopologyChangeListener{
             System.out.println("Task failed: "+e.getMessage());
         }
     }
+
+
 }

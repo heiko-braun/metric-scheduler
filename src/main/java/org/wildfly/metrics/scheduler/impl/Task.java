@@ -1,4 +1,4 @@
-package org.wildfly.metrics.scheduler;
+package org.wildfly.metrics.scheduler.impl;
 
 import org.wildfly.metrics.scheduler.cfg.Address;
 import org.wildfly.metrics.scheduler.cfg.Interval;
@@ -15,7 +15,7 @@ public class Task {
     private final String attribute;
     private final Interval interval;
 
-    Task(Address address, String attribute, Interval interval) {
+    public Task(Address address, String attribute, Interval interval) {
         this.address = address;
         this.attribute = attribute;
         this.interval = interval;
