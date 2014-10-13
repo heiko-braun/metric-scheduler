@@ -21,14 +21,14 @@ import static com.codahale.metrics.MetricRegistry.name;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
- * The core service that creates task lists from a configuration
+ * The core service that creates task lists from a {@link org.wildfly.metrics.scheduler.cfg.Configuration}
  * and schedules work through a {@link Scheduler}.
- * The resulting data will be pushed to the {@link org.wildfly.metrics.scheduler.StorageAdapter}
+ * The resulting data will be pushed to a {@link org.wildfly.metrics.scheduler.StorageAdapter}
  *
  * @author Heiko Braun
  * @since 10/10/14
  */
-public class Service implements TopologyChangeListener{
+public class Service implements TopologyChangeListener {
 
     private Configuration configuration;
     private Scheduler scheduler;
@@ -59,6 +59,7 @@ public class Service implements TopologyChangeListener{
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(MILLISECONDS)
                 .build();
+
         this.monitor = createMonitor(metrics);
 
         this.scheduler = new IntervalBasedScheduler(
@@ -73,8 +74,11 @@ public class Service implements TopologyChangeListener{
 
     private Monitor createMonitor(final MetricRegistry metrics) {
         return new Monitor() {
-            private final Timer requestTimer = metrics.timer(name("requestTimer"));
-            private final Counter delayCounter = metrics.counter(name("delayCounter"));
+
+            private final Timer requestTimer = metrics.timer(name("dmr-request-timer"));
+            private final Counter delayCounter = metrics.counter(name("task-delay-counter"));
+            private final Counter taskAttemptCounter = metrics.counter(name("task-attempt-counter"));
+            private final Counter taskErrorCounter = metrics.counter(name("task-error-counter"));
 
             @Override
             public Timer getRequestTimer() {
@@ -84,6 +88,16 @@ public class Service implements TopologyChangeListener{
             @Override
             public Counter getDelayedCounter() {
                 return delayCounter;
+            }
+
+            @Override
+            public Counter getAttemptCounter() {
+                return taskAttemptCounter;
+            }
+
+            @Override
+            public Counter getErrorCounter() {
+                return taskErrorCounter;
             }
         };
     }

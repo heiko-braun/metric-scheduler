@@ -9,5 +9,7 @@ import com.codahale.metrics.Timer;
  */
 public interface Monitor {
     Timer getRequestTimer();
+    Counter getAttemptCounter();
+    Counter getErrorCounter();
     Counter getDelayedCounter();
 }

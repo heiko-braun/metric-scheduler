@@ -170,9 +170,14 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
             try {
 
+                monitor.getAttemptCounter().inc();
+
                 Timer.Context requestContext = monitor.getRequestTimer().time();
                 monitor.getDelayedCounter().inc(); // assumption: every op is delayed or erroneous
+
+                // execute request
                 ModelNode response = client.execute(operation);
+
                 long durationMs = requestContext.stop() / 1000000;
 
                 String outcome = response.get(OUTCOME).asString();
@@ -195,10 +200,12 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
 
                 } else {
+                    monitor.getErrorCounter().inc();
                     completionHandler.onFailed(group, new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
                 }
 
             } catch (IOException e) {
+                monitor.getErrorCounter().inc();
                 completionHandler.onFailed(group, e);
             } finally {
 
