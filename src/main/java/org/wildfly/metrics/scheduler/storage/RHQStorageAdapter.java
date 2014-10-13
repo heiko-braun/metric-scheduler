@@ -8,6 +8,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.rhq.metrics.client.common.Batcher;
 import org.rhq.metrics.client.common.SingleMetric;
+import org.wildfly.metrics.scheduler.config.Configuration;
 import org.wildfly.metrics.scheduler.polling.Task;
 
 import java.io.IOException;
@@ -23,7 +24,12 @@ import java.util.Set;
  */
 public class RHQStorageAdapter implements StorageAdapter {
 
+    private final Configuration config;
     private HttpClient httpclient = new DefaultHttpClient();
+
+    public RHQStorageAdapter(Configuration config) {
+        this.config = config;
+    }
 
     @Override
     public void store(Set<Sample> samples) {
@@ -40,7 +46,7 @@ public class RHQStorageAdapter implements StorageAdapter {
 
             // If we have data, send it to the RHQ Metrics server
             if (metrics.size()>0) {
-                HttpPost post = new HttpPost("http://localhost:8080/rhq-metrics/metrics"); // TODO
+                HttpPost post = new HttpPost(config.getRHQUrl());
                 post.setHeader("Content-Type", "application/json;charset=utf-8");
                 post.setEntity(new StringEntity(Batcher.metricListToJson(metrics)));
 

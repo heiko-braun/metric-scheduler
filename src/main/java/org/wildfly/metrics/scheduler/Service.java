@@ -46,7 +46,7 @@ public class Service implements TopologyChangeListener {
 
         this.configuration = configuration;
         this.completionHandler = new BufferedStorageDispatcher(
-                new InfluxStorageAdapter() // TODO: make configurable
+                new InfluxStorageAdapter(configuration) // TODO: make configurable
         );
         final MetricRegistry metrics = new MetricRegistry();
 

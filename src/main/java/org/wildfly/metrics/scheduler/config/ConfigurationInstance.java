@@ -65,4 +65,29 @@ public class ConfigurationInstance implements Configuration {
     public int getSchedulerThreads() {
         return schedulerThreads;
     }
+
+    @Override
+    public String getInfluxUrl() {
+        return "http://sandbox.influxdb.com:8086";
+    }
+
+    @Override
+    public String getInfluxUser() {
+        return "admin";
+    }
+
+    @Override
+    public String getInfluxPassword() {
+        return "password123";
+    }
+
+    @Override
+    public String getInfluxDBName() {
+        return "wildfly";
+    }
+
+    @Override
+    public String getRHQUrl() {
+        return "http://localhost:8080/rhq-metrics/metrics";
+    }
 }

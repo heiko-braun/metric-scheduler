@@ -36,4 +36,14 @@ public interface Configuration {
      * @return
      */
     List<ResourceRef> getResourceRefs();
+
+    String getInfluxUrl();
+
+    String getInfluxUser();
+
+    String getInfluxPassword();
+
+    String getInfluxDBName();
+
+    String getRHQUrl();
 }
