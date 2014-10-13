@@ -8,6 +8,7 @@ import org.wildfly.metrics.scheduler.cfg.Configuration;
 import org.wildfly.metrics.scheduler.cfg.Interval;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
 import org.wildfly.metrics.scheduler.impl.Task;
+import org.wildfly.metrics.scheduler.impl.TaskGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +63,7 @@ public class TaskFailureTest {
             }
 
             @Override
-            public void onFailed(Task t, Throwable e) {
+            public void onFailed(TaskGroup g, Throwable e) {
                 counter.failed++;
             }
         });

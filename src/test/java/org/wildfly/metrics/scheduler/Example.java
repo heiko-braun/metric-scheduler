@@ -22,6 +22,7 @@
 package org.wildfly.metrics.scheduler;
 
 import org.wildfly.metrics.scheduler.cfg.Configuration;
+import org.wildfly.metrics.scheduler.impl.DebugCompletionHandler;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -36,7 +37,7 @@ public class Example {
         Configuration configuration = new TestConfiguration().load();
 
         // create service
-        Service service = new Service(configuration);
+        Service service = new Service(configuration, new DebugCompletionHandler());
 
         // schedule
         service.start();

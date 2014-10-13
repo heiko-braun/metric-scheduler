@@ -21,13 +21,11 @@
  */
 package org.wildfly.metrics.scheduler.impl;
 
-import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.metrics.scheduler.Monitor;
 import org.wildfly.metrics.scheduler.TaskCompletionHandler;
 
 import java.io.IOException;
@@ -41,7 +39,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import static com.codahale.metrics.MetricRegistry.name;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.wildfly.metrics.scheduler.Scheduler.State.RUNNING;
 import static org.wildfly.metrics.scheduler.Scheduler.State.STOPPED;
@@ -54,18 +51,16 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
     private final ScheduledExecutorService executorService;
     private final List<ScheduledFuture> jobs;
-    private final ConsoleReporter reporter;
-    private final Timer requestTimer;
-    private final Counter delayCounter;
     private final int poolSize;
     private final String host;
     private final int port;
     private final TaskCompletionHandler<ModelNode> completionHandler;
+    private final Monitor monitor;
 
     private ConcurrentLinkedQueue<ModelControllerClient> connectionPool = new ConcurrentLinkedQueue<>();
 
-    public IntervalBasedScheduler(final int poolSize, String host, int port, TaskCompletionHandler<ModelNode> completionHandler) {
-
+    public IntervalBasedScheduler(Monitor monitor, final int poolSize, String host, int port, TaskCompletionHandler<ModelNode> completionHandler) {
+        this.monitor = monitor;
         this.poolSize = poolSize;
         this.host = host;
         this.port = port;
@@ -81,23 +76,13 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
         this.jobs = new LinkedList<>();
 
-        // metrics
-        MetricRegistry metrics = new MetricRegistry();
-        this.reporter = ConsoleReporter.forRegistry(metrics)
-                .convertRatesTo(TimeUnit.SECONDS)
-                .convertDurationsTo(MILLISECONDS)
-                .build();
-
-        this.requestTimer = metrics.timer(name("requestTimer"));
-        this.delayCounter = metrics.counter(name("delayCounter"));
-
     }
 
     @Override
     public void schedule(List<Task> tasks) {
         verifyState(STOPPED);
 
-         // optimize task groups
+        // optimize task groups
         List<TaskGroup> groups = new IntervalGrouping().apply(tasks);
 
         System.out.println("<< Number of Tasks: "+tasks.size()+" >>");
@@ -140,7 +125,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
                 job.cancel(false);
             }
             executorService.shutdown();
-            executorService.awaitTermination(2, TimeUnit.SECONDS);
+            executorService.awaitTermination(5, TimeUnit.SECONDS);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -156,8 +141,6 @@ public class IntervalBasedScheduler extends AbstractScheduler {
             };
 
             pushState(STOPPED);
-            reporter.stop();
-            reporter.report();
         }
     }
 
@@ -187,8 +170,8 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
             try {
 
-                Timer.Context requestContext = requestTimer.time();
-                delayCounter.inc(); // assumption: every op is delayed or erroneous
+                Timer.Context requestContext = monitor.getRequestTimer().time();
+                monitor.getDelayedCounter().inc(); // assumption: every op is delayed or erroneous
                 ModelNode response = client.execute(operation);
                 long durationMs = requestContext.stop() / 1000000;
 
@@ -197,7 +180,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
                 {
 
                     if (durationMs < group.getInterval().millis()) {
-                        delayCounter.dec(); // not delayed
+                        monitor.getDelayedCounter().dec(); // not delayed
                     }
 
                     List<Property> steps = response.get(RESULT).asPropertyList();
@@ -212,13 +195,11 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
 
                 } else {
-                    // TODO: can we identify which task exactly failed?
-                    System.out.println(response);
-                  completionHandler.onFailed(null, new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
+                    completionHandler.onFailed(group, new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
                 }
 
             } catch (IOException e) {
-                completionHandler.onFailed(null, e);
+                completionHandler.onFailed(group, e);
             } finally {
 
                 // return to pool

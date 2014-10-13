@@ -32,7 +32,7 @@ import java.util.UUID;
 /**
  * @author Harald Pehl
  */
-class TaskGroup implements Iterable<Task> {
+public class TaskGroup implements Iterable<Task> {
 
     private final String id; // to uniquely reference this group
     private final Interval interval; // impacts thread scheduling

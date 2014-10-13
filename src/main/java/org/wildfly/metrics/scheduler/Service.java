@@ -1,14 +1,24 @@
 package org.wildfly.metrics.scheduler;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.ScheduledReporter;
+import com.codahale.metrics.Timer;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.metrics.scheduler.cfg.Address;
 import org.wildfly.metrics.scheduler.cfg.Configuration;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
 import org.wildfly.metrics.scheduler.impl.IntervalBasedScheduler;
 import org.wildfly.metrics.scheduler.impl.Task;
+import org.wildfly.metrics.scheduler.impl.TaskGroup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static com.codahale.metrics.MetricRegistry.name;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * The core service that creates task lists from a configuration
@@ -23,28 +33,28 @@ public class Service implements TopologyChangeListener{
     private final Configuration configuration;
     private final Scheduler scheduler;
     private final TaskCompletionHandler<ModelNode> completionHandler;
+    private final Monitor monitor;
+    private final ScheduledReporter reporter;
 
-    public Service(Configuration configuration) {
-
-        this.configuration = configuration;
-        this.completionHandler = new DebugCompletionHandler();
-        this.scheduler = new IntervalBasedScheduler(
-                2, // threads
-                configuration.getHost(),
-                configuration.getPort(),
-                completionHandler
-        );
-    }
 
     /**
      * Allows to override the completaiton handler
      * @param configuration
      * @param completionHandler
      */
-    Service(Configuration configuration, TaskCompletionHandler<ModelNode> completionHandler) {
+    public Service(Configuration configuration, TaskCompletionHandler<ModelNode> completionHandler) {
         this.configuration = configuration;
         this.completionHandler = completionHandler;
+
+        final MetricRegistry metrics = new MetricRegistry();
+        this.reporter = ConsoleReporter.forRegistry(metrics)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(MILLISECONDS)
+                .build();
+        this.monitor = createMonitor(metrics);
+
         this.scheduler = new IntervalBasedScheduler(
+                monitor,
                 2, // threads
                 configuration.getHost(),
                 configuration.getPort(),
@@ -52,6 +62,22 @@ public class Service implements TopologyChangeListener{
         );
     }
 
+    private Monitor createMonitor(final MetricRegistry metrics) {
+        return new Monitor() {
+            private final Timer requestTimer = metrics.timer(name("requestTimer"));
+            private final Counter delayCounter = metrics.counter(name("delayCounter"));
+
+            @Override
+            public Timer getRequestTimer() {
+                return requestTimer;
+            }
+
+            @Override
+            public Counter getDelayedCounter() {
+                return delayCounter;
+            }
+        };
+    }
     void start() {
 
         // turn ResourceRef into Tasks (relative to absolute addresses ...)
@@ -69,8 +95,9 @@ public class Service implements TopologyChangeListener{
     }
 
     void stop() {
-
-        scheduler.shutdown();
+        this.scheduler.shutdown();
+        this.reporter.stop();
+        this.reporter.report();
     }
 
     @Override
@@ -79,18 +106,5 @@ public class Service implements TopologyChangeListener{
         // recalculate tasks
         // restart scheduler
     }
-
-    class DebugCompletionHandler implements TaskCompletionHandler<ModelNode> {
-        @Override
-        public void onCompleted(Task t, ModelNode data) {
-            System.out.println(t + " > "+ data);
-        }
-
-        @Override
-        public void onFailed(Task t, Throwable e) {
-            System.out.println("Task failed: "+e.getMessage());
-        }
-    }
-
 
 }

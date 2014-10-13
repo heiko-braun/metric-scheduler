@@ -1,6 +1,7 @@
 package org.wildfly.metrics.scheduler;
 
 import org.wildfly.metrics.scheduler.impl.Task;
+import org.wildfly.metrics.scheduler.impl.TaskGroup;
 
 /**
  * @author Heiko Braun
@@ -8,5 +9,5 @@ import org.wildfly.metrics.scheduler.impl.Task;
  */
 public interface TaskCompletionHandler<D> {
     void onCompleted(Task t, D data);
-    void onFailed(Task t, Throwable e);
+    void onFailed(TaskGroup g, Throwable e);
 }

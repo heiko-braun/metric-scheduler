@@ -21,12 +21,10 @@
  */
 package org.wildfly.metrics.scheduler;
 
-import org.wildfly.metrics.scheduler.cfg.Address;
 import org.wildfly.metrics.scheduler.cfg.ConfigLoader;
 import org.wildfly.metrics.scheduler.cfg.Configuration;
 import org.wildfly.metrics.scheduler.cfg.Interval;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
-import org.wildfly.metrics.scheduler.impl.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +35,6 @@ import static org.wildfly.metrics.scheduler.cfg.Interval.EACH_SECOND;
  * @author Harald Pehl
  */
 public final class TestConfiguration implements ConfigLoader {
-
-
-    public static Task fooTask() {
-        return fooTask(EACH_SECOND);
-    }
-
-    public static Task fooTask(Interval interval) {
-        return new Task(Address.apply("/foo=bar"), "baz", interval);
-    }
 
     public Configuration load() {
         List<ResourceRef> definitions = new ArrayList<>();
