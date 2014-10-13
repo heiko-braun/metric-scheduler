@@ -19,31 +19,50 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.metrics.scheduler;
+package org.wildfly.metrics.scheduler.cfg;
 
-import org.wildfly.metrics.scheduler.cfg.Configuration;
-import org.wildfly.metrics.scheduler.cfg.ConfigurationInstance;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
+ * A collection of {@link ResourceRef}s with a unique id.
+ *
  * @author Harald Pehl
  */
-public class Example {
+public class ConfigurationInstance implements Configuration {
 
-    public static void main(String[] args) throws Exception {
+    private final List<ResourceRef> resourceRefs;
+    private String host;
+    private int port;
+    private int schedulerThreads = 2;
 
-        // create configuration
-        Configuration configuration = new TestConfiguration().load();
+    public ConfigurationInstance(String host, int port, final List<ResourceRef> resourceRefs) {
+        this.host = host;
+        this.port = port;
+        this.resourceRefs = new ArrayList<>();
 
-        // create service
-        Service service = new Service(configuration);
+        if (resourceRefs != null) {
+            this.resourceRefs.addAll(resourceRefs);
+        }
+    }
 
-        // schedule
-        service.start();
-        SECONDS.sleep(10);
+    public List<ResourceRef> getResourceRefs() {
+        return Collections.unmodifiableList(resourceRefs);
+    }
 
-        // shutdown
-        service.stop();
+    @Override
+    public String getHost() {
+        return host;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    @Override
+    public int getSchedulerThreads() {
+        return schedulerThreads;
     }
 }

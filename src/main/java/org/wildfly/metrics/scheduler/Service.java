@@ -63,7 +63,7 @@ public class Service implements TopologyChangeListener{
 
         this.scheduler = new IntervalBasedScheduler(
                 monitor,
-                2, // threads
+                configuration.getSchedulerThreads(),
                 configuration.getHost(),
                 configuration.getPort(),
                 completionHandler

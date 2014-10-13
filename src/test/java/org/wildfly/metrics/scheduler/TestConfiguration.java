@@ -23,6 +23,7 @@ package org.wildfly.metrics.scheduler;
 
 import org.wildfly.metrics.scheduler.cfg.ConfigLoader;
 import org.wildfly.metrics.scheduler.cfg.Configuration;
+import org.wildfly.metrics.scheduler.cfg.ConfigurationInstance;
 import org.wildfly.metrics.scheduler.cfg.Interval;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
 
@@ -61,6 +62,6 @@ public final class TestConfiguration implements ConfigLoader {
         definitions.add(new ResourceRef("/core-service=platform-mbean/type=threading", "thread-count", Interval.FIVE_SECONDS));
 
 
-        return new Configuration("localhost", 9999, definitions);
+        return new ConfigurationInstance("localhost", 9999, definitions);
     }
 }

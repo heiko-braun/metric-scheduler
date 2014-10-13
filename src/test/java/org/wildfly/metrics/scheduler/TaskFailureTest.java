@@ -4,7 +4,7 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.wildfly.metrics.scheduler.cfg.ConfigLoader;
-import org.wildfly.metrics.scheduler.cfg.Configuration;
+import org.wildfly.metrics.scheduler.cfg.ConfigurationInstance;
 import org.wildfly.metrics.scheduler.cfg.Interval;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
 import org.wildfly.metrics.scheduler.impl.Task;
@@ -31,14 +31,14 @@ public class TaskFailureTest {
 
     class ErrorConfig implements ConfigLoader {
         @Override
-        public Configuration load() {
+        public ConfigurationInstance load() {
             List<ResourceRef> definitions = new ArrayList<>();
             String vmAddress = "/core-service=platform-mbean/type=memory";
 
             definitions.add(new ResourceRef(vmAddress, "heap-memory-usage", EACH_MINUTE));
             definitions.add(new ResourceRef("/foo=bar", "attribute", Interval.EACH_MINUTE));
 
-            return new Configuration("localhost", 9999, definitions);
+            return new ConfigurationInstance("localhost", 9999, definitions);
         }
     }
 
@@ -51,7 +51,7 @@ public class TaskFailureTest {
     @Test
     public void testTaskFailureHandling() throws Exception {
          // create configuration
-        Configuration configuration = new ErrorConfig().load();
+        ConfigurationInstance configuration = new ErrorConfig().load();
 
         final Counter counter = new Counter();
 
