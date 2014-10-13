@@ -21,8 +21,6 @@
  */
 package org.wildfly.metrics.scheduler.polling;
 
-import org.wildfly.metrics.scheduler.Scheduler;
-
 /**
  * @author Harald Pehl
  */

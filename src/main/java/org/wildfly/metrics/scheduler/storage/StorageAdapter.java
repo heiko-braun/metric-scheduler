@@ -1,4 +1,4 @@
-package org.wildfly.metrics.scheduler;
+package org.wildfly.metrics.scheduler.storage;
 
 import org.wildfly.metrics.scheduler.polling.Task;
 

@@ -8,7 +8,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.rhq.metrics.client.common.Batcher;
 import org.rhq.metrics.client.common.SingleMetric;
-import org.wildfly.metrics.scheduler.StorageAdapter;
 import org.wildfly.metrics.scheduler.polling.Task;
 
 import java.io.IOException;

@@ -1,8 +1,7 @@
 package org.wildfly.metrics.scheduler.storage;
 
 import org.jboss.dmr.ModelNode;
-import org.wildfly.metrics.scheduler.StorageAdapter;
-import org.wildfly.metrics.scheduler.TaskCompletionHandler;
+import org.wildfly.metrics.scheduler.polling.Scheduler;
 import org.wildfly.metrics.scheduler.polling.Task;
 import org.wildfly.metrics.scheduler.polling.TaskGroup;
 
@@ -13,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
  * @author Heiko Braun
  * @since 13/10/14
  */
-public class BufferedStorageDispatcher implements TaskCompletionHandler<ModelNode> {
+public class BufferedStorageDispatcher implements Scheduler.CompletionHandler {
 
     private final StorageAdapter storageAdapter;
     private final BlockingQueue<Tuple> queue;

@@ -3,7 +3,6 @@ package org.wildfly.metrics.scheduler.storage;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Serie;
-import org.wildfly.metrics.scheduler.StorageAdapter;
 import org.wildfly.metrics.scheduler.polling.Task;
 
 import java.util.concurrent.TimeUnit;

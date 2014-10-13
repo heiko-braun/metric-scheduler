@@ -19,15 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.metrics.scheduler;
+package org.wildfly.metrics.scheduler.polling;
 
-import org.wildfly.metrics.scheduler.polling.Task;
+import org.jboss.dmr.ModelNode;
 
 import java.util.List;
 
 /**
  * Performs the actual work collecting the data from the monitored resources.
- * Used by the main {@link Service}
+ * Used by the main {@link org.wildfly.metrics.scheduler.Service}
  *
  * @author Harald Pehl
  */
@@ -35,7 +35,15 @@ public interface Scheduler {
 
     public enum State {RUNNING, STOPPED}
 
-    void schedule(List<Task> operations);
+    void schedule(List<Task> operations, CompletionHandler completionHandler);
 
     void shutdown();
+
+    /**
+     * Callback for completed tasks
+     */
+    interface CompletionHandler {
+        void onCompleted(Task t, ModelNode data);
+        void onFailed(TaskGroup g, Throwable e);
+    }
 }

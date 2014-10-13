@@ -5,15 +5,14 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Timer;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.metrics.scheduler.config.Address;
 import org.wildfly.metrics.scheduler.config.Configuration;
 import org.wildfly.metrics.scheduler.config.ResourceRef;
 import org.wildfly.metrics.scheduler.polling.IntervalBasedScheduler;
+import org.wildfly.metrics.scheduler.polling.Scheduler;
 import org.wildfly.metrics.scheduler.polling.Task;
 import org.wildfly.metrics.scheduler.storage.BufferedStorageDispatcher;
 import org.wildfly.metrics.scheduler.storage.InfluxStorageAdapter;
-import org.wildfly.metrics.scheduler.storage.RHQStorageAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +23,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * The core service that creates task lists from a {@link org.wildfly.metrics.scheduler.config.Configuration}
- * and schedules work through a {@link Scheduler}.
- * The resulting data will be pushed to a {@link org.wildfly.metrics.scheduler.StorageAdapter}
+ * and schedules work through a {@link org.wildfly.metrics.scheduler.polling.Scheduler}.
+ * The resulting data will be pushed to a {@link org.wildfly.metrics.scheduler.storage.StorageAdapter}
  *
  * @author Heiko Braun
  * @since 10/10/14
@@ -34,32 +33,21 @@ public class Service implements TopologyChangeListener {
 
     private Configuration configuration;
     private Scheduler scheduler;
-    private TaskCompletionHandler<ModelNode> completionHandler;
     private Monitor monitor;
     private ScheduledReporter reporter;
     private boolean started = false;
+    private BufferedStorageDispatcher completionHandler;
 
     /**
      *
      * @param configuration
      */
     public Service(Configuration configuration) {
-        this(configuration,
-                new BufferedStorageDispatcher(
-                        new InfluxStorageAdapter()
-                )
-        );
-    }
 
-    /**
-     * Allows to override the completion handler.
-     *
-     * @param configuration
-     */
-    Service(Configuration configuration, TaskCompletionHandler<ModelNode> completionHandler) {
         this.configuration = configuration;
-        this.completionHandler = completionHandler;
-
+        this.completionHandler = new BufferedStorageDispatcher(
+                new InfluxStorageAdapter() // TODO: make configurable
+        );
         final MetricRegistry metrics = new MetricRegistry();
 
         this.reporter = ConsoleReporter.forRegistry(metrics)
@@ -73,8 +61,7 @@ public class Service implements TopologyChangeListener {
                 monitor,
                 configuration.getSchedulerThreads(),
                 configuration.getHost(),
-                configuration.getPort(),
-                completionHandler
+                configuration.getPort()
         );
     }
 
@@ -114,7 +101,7 @@ public class Service implements TopologyChangeListener {
         // turn ResourceRef into Tasks (relative to absolute addresses ...)
         List<Task> tasks = createTasks(configuration.getResourceRefs());
         this.completionHandler.start();
-        this.scheduler.schedule(tasks);
+        this.scheduler.schedule(tasks, completionHandler);
     }
 
     private List<Task> createTasks(List<ResourceRef> resourceRefs) {
@@ -155,4 +142,9 @@ public class Service implements TopologyChangeListener {
         if(!started)
             reporter.start(period, unit);
     }
+
+
+
+
+
 }

@@ -26,7 +26,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.wildfly.metrics.scheduler.Monitor;
-import org.wildfly.metrics.scheduler.TaskCompletionHandler;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -46,8 +45,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.wildfly.metrics.scheduler.Scheduler.State.RUNNING;
-import static org.wildfly.metrics.scheduler.Scheduler.State.STOPPED;
+import static org.wildfly.metrics.scheduler.polling.Scheduler.State.RUNNING;
+import static org.wildfly.metrics.scheduler.polling.Scheduler.State.STOPPED;
 
 /**
  * @author Harald Pehl
@@ -60,17 +59,16 @@ public class IntervalBasedScheduler extends AbstractScheduler {
     private final int poolSize;
     private final String host;
     private final int port;
-    private final TaskCompletionHandler<ModelNode> completionHandler;
+
     private final Monitor monitor;
 
     private ConcurrentLinkedQueue<ModelControllerClient> connectionPool = new ConcurrentLinkedQueue<>();
 
-    public IntervalBasedScheduler(Monitor monitor, final int poolSize, String host, int port, TaskCompletionHandler<ModelNode> completionHandler) {
+    public IntervalBasedScheduler(Monitor monitor, final int poolSize, String host, int port) {
         this.monitor = monitor;
         this.poolSize = poolSize;
         this.host = host;
         this.port = port;
-        this.completionHandler = completionHandler;
 
         this.executorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
             @Override
@@ -85,7 +83,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
     }
 
     @Override
-    public void schedule(List<Task> tasks) {
+    public void schedule(List<Task> tasks, final CompletionHandler completionHandler) {
         verifyState(STOPPED);
 
         // optimize task groups
@@ -131,7 +129,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
                     // schedule tasks
                     executorService.scheduleWithFixedDelay(
-                            new IO(group),
+                            new IO(group, completionHandler),
                             group.getOffsetMillis(), group.getInterval().millis(),
                             MILLISECONDS
                     )
@@ -178,10 +176,12 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         private static final String SUCCESS = "success";
 
         private final TaskGroup group;
+        private final CompletionHandler completionHandler;
         private final ModelNode operation;
 
-        private IO(TaskGroup group) {
+        private IO(TaskGroup group, CompletionHandler completionHandler) {
             this.group = group;
+            this.completionHandler = completionHandler;
 
             // for the IO lifetime the operation is immutable and can be re-used
             this.operation = new ReadAttributeOperationBuilder().createOperation(group);
