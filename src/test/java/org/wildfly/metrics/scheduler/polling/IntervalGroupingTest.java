@@ -1,13 +1,12 @@
-package org.wildfly.metrics.scheduler.impl;
+package org.wildfly.metrics.scheduler.polling;
 
-import static org.wildfly.metrics.scheduler.cfg.Interval.*;
+import static org.wildfly.metrics.scheduler.config.Interval.*;
 import static org.junit.Assert.assertEquals;
 
-import org.wildfly.metrics.scheduler.cfg.ResourceRef;
+import org.wildfly.metrics.scheduler.config.ResourceRef;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.wildfly.metrics.scheduler.impl.IntervalGrouping;
 
 public class IntervalGroupingTest {
 

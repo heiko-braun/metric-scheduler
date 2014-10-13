@@ -21,16 +21,16 @@
  */
 package org.wildfly.metrics.scheduler;
 
-import org.wildfly.metrics.scheduler.cfg.ConfigLoader;
-import org.wildfly.metrics.scheduler.cfg.Configuration;
-import org.wildfly.metrics.scheduler.cfg.ConfigurationInstance;
-import org.wildfly.metrics.scheduler.cfg.Interval;
-import org.wildfly.metrics.scheduler.cfg.ResourceRef;
+import org.wildfly.metrics.scheduler.config.ConfigLoader;
+import org.wildfly.metrics.scheduler.config.Configuration;
+import org.wildfly.metrics.scheduler.config.ConfigurationInstance;
+import org.wildfly.metrics.scheduler.config.Interval;
+import org.wildfly.metrics.scheduler.config.ResourceRef;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.wildfly.metrics.scheduler.cfg.Interval.EACH_SECOND;
+import static org.wildfly.metrics.scheduler.config.Interval.EACH_SECOND;
 
 /**
  * @author Harald Pehl
@@ -56,8 +56,8 @@ public final class TestConfiguration implements ConfigLoader {
 
         String vmAddress = "/core-service=platform-mbean/type=memory";
 
-        definitions.add(new ResourceRef(vmAddress, "heap-memory-usage", EACH_SECOND));
-        definitions.add(new ResourceRef(vmAddress, "non-heap-memory-usage", EACH_SECOND));
+        definitions.add(new ResourceRef(vmAddress, "heap-memory-usage#used", EACH_SECOND));
+        definitions.add(new ResourceRef(vmAddress, "non-heap-memory-usage#used", EACH_SECOND));
 
         definitions.add(new ResourceRef("/core-service=platform-mbean/type=threading", "thread-count", Interval.FIVE_SECONDS));
 

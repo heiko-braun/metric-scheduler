@@ -1,15 +1,12 @@
-package org.wildfly.metrics.scheduler.impl;
+package org.wildfly.metrics.scheduler.polling;
 
-import static org.wildfly.metrics.scheduler.cfg.Interval.EACH_SECOND;
+import static org.wildfly.metrics.scheduler.config.Interval.EACH_SECOND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.wildfly.metrics.scheduler.impl.OperationBuilder;
-import org.wildfly.metrics.scheduler.impl.ReadAttributeOperationBuilder;
-import org.wildfly.metrics.scheduler.impl.TaskGroup;
 
 public class ReadAttributeOperationBuilderTest {
 

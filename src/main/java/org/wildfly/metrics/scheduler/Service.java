@@ -6,12 +6,12 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Timer;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.metrics.scheduler.cfg.Address;
-import org.wildfly.metrics.scheduler.cfg.Configuration;
-import org.wildfly.metrics.scheduler.cfg.ResourceRef;
-import org.wildfly.metrics.scheduler.impl.DebugCompletionHandler;
-import org.wildfly.metrics.scheduler.impl.IntervalBasedScheduler;
-import org.wildfly.metrics.scheduler.impl.Task;
+import org.wildfly.metrics.scheduler.config.Address;
+import org.wildfly.metrics.scheduler.config.Configuration;
+import org.wildfly.metrics.scheduler.config.ResourceRef;
+import org.wildfly.metrics.scheduler.polling.IntervalBasedScheduler;
+import org.wildfly.metrics.scheduler.polling.Task;
+import org.wildfly.metrics.scheduler.storage.BufferedStorageDispatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
- * The core service that creates task lists from a {@link org.wildfly.metrics.scheduler.cfg.Configuration}
+ * The core service that creates task lists from a {@link org.wildfly.metrics.scheduler.config.Configuration}
  * and schedules work through a {@link Scheduler}.
  * The resulting data will be pushed to a {@link org.wildfly.metrics.scheduler.StorageAdapter}
  *
@@ -41,7 +41,14 @@ public class Service implements TopologyChangeListener {
      * @param configuration
      */
     public Service(Configuration configuration) {
-        this(configuration, new DebugCompletionHandler());
+        this(configuration, new BufferedStorageDispatcher(
+                new StorageAdapter() {
+                    @Override
+                    public void store(Task task, String value) {
+                        // noop
+                    }
+                })
+        );
     }
 
     /**
@@ -106,19 +113,32 @@ public class Service implements TopologyChangeListener {
 
         // turn ResourceRef into Tasks (relative to absolute addresses ...)
         List<Task> tasks = createTasks(configuration.getResourceRefs());
-
-        scheduler.schedule(tasks);
+        this.completionHandler.start();
+        this.scheduler.schedule(tasks);
     }
 
     private List<Task> createTasks(List<ResourceRef> resourceRefs) {
         List<Task> tasks = new ArrayList<>();
         for (ResourceRef ref : resourceRefs) {
-            tasks.add(new Task(Address.apply(ref.getAddress()), ref.getAttribute(), ref.getInterval()));
+
+            // parse sub references (complex attribute support)
+            String attribute = ref.getAttribute();
+            String subref = null;
+            int i = attribute.indexOf("#");
+            if(i>0) {
+                subref = attribute.substring(i+1, attribute.length());
+                attribute = attribute.substring(0, i);
+            }
+
+            // TODO: resolve absolute addresses
+
+            tasks.add(new Task(Address.apply(ref.getAddress()), attribute, subref, ref.getInterval()));
         }
         return tasks;
     }
 
     void stop() {
+        this.completionHandler.shutdown();
         this.scheduler.shutdown();
         this.reporter.stop();
         this.reporter.report();

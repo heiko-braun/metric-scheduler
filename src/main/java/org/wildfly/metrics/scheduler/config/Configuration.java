@@ -1,4 +1,4 @@
-package org.wildfly.metrics.scheduler.cfg;
+package org.wildfly.metrics.scheduler.config;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public interface Configuration {
 
     /**
      * The resources that are to be monitored.
-     * {@link org.wildfly.metrics.scheduler.cfg.ResourceRef}'s use relative addresses.
+     * {@link org.wildfly.metrics.scheduler.config.ResourceRef}'s use relative addresses.
      * The core {@link org.wildfly.metrics.scheduler.Service} will resolve it against absolute address within a Wildfly domain.
      *
      * @return

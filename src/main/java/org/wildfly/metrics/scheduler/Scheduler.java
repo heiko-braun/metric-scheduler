@@ -21,7 +21,7 @@
  */
 package org.wildfly.metrics.scheduler;
 
-import org.wildfly.metrics.scheduler.impl.Task;
+import org.wildfly.metrics.scheduler.polling.Task;
 
 import java.util.List;
 

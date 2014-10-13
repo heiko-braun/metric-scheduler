@@ -21,8 +21,7 @@
  */
 package org.wildfly.metrics.scheduler;
 
-import org.wildfly.metrics.scheduler.cfg.Configuration;
-import org.wildfly.metrics.scheduler.cfg.ConfigurationInstance;
+import org.wildfly.metrics.scheduler.config.Configuration;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 

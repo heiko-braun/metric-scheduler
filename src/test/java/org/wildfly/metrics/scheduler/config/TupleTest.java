@@ -1,8 +1,8 @@
-package org.wildfly.metrics.scheduler.cfg;
+package org.wildfly.metrics.scheduler.config;
 
 import static org.junit.Assert.assertEquals;
 
-import org.wildfly.metrics.scheduler.cfg.Address.Tuple;
+import org.wildfly.metrics.scheduler.config.Address.Tuple;
 import org.junit.Test;
 
 public class TupleTest {

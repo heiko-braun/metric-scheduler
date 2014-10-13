@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.metrics.scheduler.impl;
+package org.wildfly.metrics.scheduler.polling;
 
 import com.codahale.metrics.Timer;
 import org.jboss.as.controller.client.ModelControllerClient;

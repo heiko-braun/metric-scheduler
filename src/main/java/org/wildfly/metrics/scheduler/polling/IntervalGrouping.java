@@ -19,9 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.metrics.scheduler.impl;
+package org.wildfly.metrics.scheduler.polling;
 
-import org.wildfly.metrics.scheduler.cfg.Interval;
+import org.wildfly.metrics.scheduler.config.Interval;
 
 import java.util.ArrayList;
 import java.util.Collections;

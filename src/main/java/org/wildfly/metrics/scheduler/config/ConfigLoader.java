@@ -1,4 +1,4 @@
-package org.wildfly.metrics.scheduler.cfg;
+package org.wildfly.metrics.scheduler.config;
 
 /**
  * @author Heiko Braun

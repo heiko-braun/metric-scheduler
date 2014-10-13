@@ -19,14 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.metrics.scheduler.impl;
+package org.wildfly.metrics.scheduler.polling;
 
-import java.util.List;
+import org.wildfly.metrics.scheduler.Scheduler;
 
 /**
  * @author Harald Pehl
  */
-public interface TaskGrouping {
+public abstract class AbstractScheduler<R> implements Scheduler {
 
-    List<TaskGroup> apply(List<Task> tasks);
+    private State state = State.STOPPED;
+
+    protected void pushState(State state) {
+        this.state = state;
+    }
+
+    protected void verifyState(State state) throws IllegalStateException {
+        if (this.state != state) {
+            throw new IllegalStateException("Expected state " + state + ", but got " + this.state);
+        }
+    }
 }

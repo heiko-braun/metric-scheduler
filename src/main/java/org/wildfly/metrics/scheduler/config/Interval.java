@@ -19,17 +19,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.metrics.scheduler.impl;
+package org.wildfly.metrics.scheduler.config;
 
+import java.util.concurrent.TimeUnit;
 
-import org.jboss.dmr.ModelNode;
+import static java.util.concurrent.TimeUnit.*;
 
 /**
- * An interface to create operations ({@link ModelNode}'s) from {@link TaskGroup}s.
- *
  * @author Harald Pehl
  */
-public interface OperationBuilder {
+public enum Interval{
 
-    ModelNode createOperation(TaskGroup group);
+    EACH_SECOND(1, SECONDS),
+    TWO_SECONDS(2, SECONDS),
+    FIVE_SECONDS(5, SECONDS),
+
+    EACH_MINUTE(1, MINUTES),
+    TWO_MINUTES(2, MINUTES),
+    FIVE_MINUTES(5, MINUTES),
+    TEN_MINUTES(10, MINUTES),
+    TWENTY_MINUTES(20, MINUTES),
+    THIRTY_MINUTES(30, MINUTES),
+
+    EACH_HOUR(1, TimeUnit.HOURS),
+    TWO_HOURS(2, TimeUnit.HOURS),
+    SIX_HOURS(6, TimeUnit.HOURS),
+    TWELVE_HOURS(12, TimeUnit.HOURS),
+
+    EACH_DAY(1, TimeUnit.DAYS);
+
+    private final int val;
+    private final TimeUnit unit;
+
+    Interval(int val, TimeUnit unit) {
+        this.val = val;
+        this.unit = unit;
+    }
+
+    public long millis() {
+        return MILLISECONDS.convert(val, unit);
+    }
 }

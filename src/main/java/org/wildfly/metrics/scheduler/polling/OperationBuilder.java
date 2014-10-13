@@ -19,39 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.metrics.scheduler.cfg;
+package org.wildfly.metrics.scheduler.polling;
+
+
+import org.jboss.dmr.ModelNode;
 
 /**
- * A resource reference that is to be monitored.
+ * An interface to create operations ({@link ModelNode}'s) from {@link TaskGroup}s.
  *
  * @author Harald Pehl
  */
-public class ResourceRef {
+public interface OperationBuilder {
 
-    private final String address;
-    private final String attribute;
-    private final Interval interval;
-
-    public ResourceRef(final String address, final String attribute, final Interval interval) {
-        this.address = address;
-        this.attribute = attribute;
-        this.interval = interval;
-    }
-
-    @Override
-    public String toString() {
-        return "Task(" + address + ":" + attribute + ", " + interval + ")";
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public String getAttribute() {
-        return attribute;
-    }
-
-    public Interval getInterval() {
-        return interval;
-    }
+    ModelNode createOperation(TaskGroup group);
 }

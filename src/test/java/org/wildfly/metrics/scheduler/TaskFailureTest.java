@@ -3,18 +3,18 @@ package org.wildfly.metrics.scheduler;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.wildfly.metrics.scheduler.cfg.ConfigLoader;
-import org.wildfly.metrics.scheduler.cfg.ConfigurationInstance;
-import org.wildfly.metrics.scheduler.cfg.Interval;
-import org.wildfly.metrics.scheduler.cfg.ResourceRef;
-import org.wildfly.metrics.scheduler.impl.Task;
-import org.wildfly.metrics.scheduler.impl.TaskGroup;
+import org.wildfly.metrics.scheduler.config.ConfigLoader;
+import org.wildfly.metrics.scheduler.config.ConfigurationInstance;
+import org.wildfly.metrics.scheduler.config.Interval;
+import org.wildfly.metrics.scheduler.config.ResourceRef;
+import org.wildfly.metrics.scheduler.polling.Task;
+import org.wildfly.metrics.scheduler.polling.TaskGroup;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.wildfly.metrics.scheduler.cfg.Interval.EACH_MINUTE;
+import static org.wildfly.metrics.scheduler.config.Interval.EACH_MINUTE;
 
 /**
  * Test task failure scenarios
@@ -65,6 +65,16 @@ public class TaskFailureTest {
             @Override
             public void onFailed(TaskGroup g, Throwable e) {
                 counter.failed++;
+            }
+
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void shutdown() {
+
             }
         };
 
