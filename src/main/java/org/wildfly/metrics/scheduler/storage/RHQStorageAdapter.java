@@ -28,7 +28,7 @@ public class RHQStorageAdapter implements StorageAdapter {
 
 
         try {
-            String source = "localhost";
+            String source = "localhost."+task.getAttribute();
             long now = System.currentTimeMillis();
 
             List<SingleMetric> metrics = new ArrayList<>();

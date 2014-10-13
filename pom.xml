@@ -32,9 +32,9 @@
             <version>${metrics.version}</version>
         </dependency>
         <dependency>
-          <groupId>org.wildfly</groupId>
-          <artifactId>wildfly-controller-client</artifactId>
-          <version>${wildfly.version}</version>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-controller-client</artifactId>
+            <version>${wildfly.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -57,6 +57,11 @@
             <artifactId>httpclient</artifactId>
             <version>4.2.1</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.influxdb</groupId>
+            <artifactId>influxdb-java</artifactId>
+            <version>1.2</version>
         </dependency>
     </dependencies>
 </project>

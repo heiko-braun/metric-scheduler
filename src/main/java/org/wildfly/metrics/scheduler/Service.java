@@ -12,6 +12,7 @@ import org.wildfly.metrics.scheduler.config.ResourceRef;
 import org.wildfly.metrics.scheduler.polling.IntervalBasedScheduler;
 import org.wildfly.metrics.scheduler.polling.Task;
 import org.wildfly.metrics.scheduler.storage.BufferedStorageDispatcher;
+import org.wildfly.metrics.scheduler.storage.InfluxStorageAdapter;
 import org.wildfly.metrics.scheduler.storage.RHQStorageAdapter;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class Service implements TopologyChangeListener {
     private TaskCompletionHandler<ModelNode> completionHandler;
     private Monitor monitor;
     private ScheduledReporter reporter;
+    private boolean started = false;
 
     /**
      *
@@ -44,7 +46,7 @@ public class Service implements TopologyChangeListener {
     public Service(Configuration configuration) {
         this(configuration,
                 new BufferedStorageDispatcher(
-                        new RHQStorageAdapter()
+                        new InfluxStorageAdapter()
                 )
         );
     }
@@ -149,4 +151,8 @@ public class Service implements TopologyChangeListener {
         // restart scheduler
     }
 
+    public void reportEvery(int period, TimeUnit unit) {
+        if(!started)
+            reporter.start(period, unit);
+    }
 }
