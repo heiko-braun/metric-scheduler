@@ -28,6 +28,12 @@ import org.jboss.dmr.Property;
 import org.wildfly.metrics.scheduler.Monitor;
 import org.wildfly.metrics.scheduler.TaskCompletionHandler;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.LinkedList;
@@ -88,11 +94,31 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         System.out.println("<< Number of Tasks: "+tasks.size()+" >>");
         System.out.println("<< Number of Task Groups: "+groups.size()+" >>");
 
+        final CallbackHandler callbackHandler = new CallbackHandler() {
+
+            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                for (Callback current : callbacks) {
+                    if (current instanceof NameCallback) {
+                        NameCallback ncb = (NameCallback) current;
+                        ncb.setName("admin");         // TODO config
+                    } else if (current instanceof PasswordCallback) {
+                        PasswordCallback pcb = (PasswordCallback) current;
+                        pcb.setPassword("password123".toCharArray());     // TODO config
+                    } else if (current instanceof RealmCallback) {
+                        RealmCallback rcb = (RealmCallback) current;
+                        rcb.setText(rcb.getDefaultText());
+                    } else {
+                        throw new UnsupportedCallbackException(current);
+                    }
+                }
+            }
+        };
+
         // populate connection pool
         for (int i = 0; i < poolSize; i++) {
             try {
                 connectionPool.add(
-                        ModelControllerClient.Factory.create(InetAddress.getByName(host), port)
+                        ModelControllerClient.Factory.create(InetAddress.getByName(host), port, callbackHandler)
                 );
             } catch (Throwable e) {
                 e.printStackTrace();

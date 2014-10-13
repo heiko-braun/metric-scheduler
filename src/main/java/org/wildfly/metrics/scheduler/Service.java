@@ -12,6 +12,7 @@ import org.wildfly.metrics.scheduler.config.ResourceRef;
 import org.wildfly.metrics.scheduler.polling.IntervalBasedScheduler;
 import org.wildfly.metrics.scheduler.polling.Task;
 import org.wildfly.metrics.scheduler.storage.BufferedStorageDispatcher;
+import org.wildfly.metrics.scheduler.storage.RHQStorageAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,13 +42,10 @@ public class Service implements TopologyChangeListener {
      * @param configuration
      */
     public Service(Configuration configuration) {
-        this(configuration, new BufferedStorageDispatcher(
-                new StorageAdapter() {
-                    @Override
-                    public void store(Task task, String value) {
-                        // noop
-                    }
-                })
+        this(configuration,
+                new BufferedStorageDispatcher(
+                        new RHQStorageAdapter()
+                )
         );
     }
 
