@@ -9,9 +9,9 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.metrics.scheduler.cfg.Address;
 import org.wildfly.metrics.scheduler.cfg.Configuration;
 import org.wildfly.metrics.scheduler.cfg.ResourceRef;
+import org.wildfly.metrics.scheduler.impl.DebugCompletionHandler;
 import org.wildfly.metrics.scheduler.impl.IntervalBasedScheduler;
 import org.wildfly.metrics.scheduler.impl.Task;
-import org.wildfly.metrics.scheduler.impl.TaskGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,23 +30,31 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  */
 public class Service implements TopologyChangeListener{
 
-    private final Configuration configuration;
-    private final Scheduler scheduler;
-    private final TaskCompletionHandler<ModelNode> completionHandler;
-    private final Monitor monitor;
-    private final ScheduledReporter reporter;
-
+    private Configuration configuration;
+    private Scheduler scheduler;
+    private TaskCompletionHandler<ModelNode> completionHandler;
+    private Monitor monitor;
+    private ScheduledReporter reporter;
 
     /**
-     * Allows to override the completaiton handler
+     *
      * @param configuration
-     * @param completionHandler
      */
-    public Service(Configuration configuration, TaskCompletionHandler<ModelNode> completionHandler) {
+    public Service(Configuration configuration) {
+        this(configuration, new DebugCompletionHandler());
+    }
+
+    /**
+     * Allows to override the completion handler.
+     *
+     * @param configuration
+     */
+    Service(Configuration configuration, TaskCompletionHandler<ModelNode> completionHandler) {
         this.configuration = configuration;
         this.completionHandler = completionHandler;
 
         final MetricRegistry metrics = new MetricRegistry();
+
         this.reporter = ConsoleReporter.forRegistry(metrics)
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(MILLISECONDS)
@@ -61,6 +69,7 @@ public class Service implements TopologyChangeListener{
                 completionHandler
         );
     }
+
 
     private Monitor createMonitor(final MetricRegistry metrics) {
         return new Monitor() {
@@ -78,6 +87,7 @@ public class Service implements TopologyChangeListener{
             }
         };
     }
+
     void start() {
 
         // turn ResourceRef into Tasks (relative to absolute addresses ...)

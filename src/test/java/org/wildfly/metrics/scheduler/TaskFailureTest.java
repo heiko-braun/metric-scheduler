@@ -56,7 +56,7 @@ public class TaskFailureTest {
         final Counter counter = new Counter();
 
         // create service
-        Service service = new Service(configuration, new TaskCompletionHandler<ModelNode>() {
+        TaskCompletionHandler<ModelNode> completionHandler = new TaskCompletionHandler<ModelNode>() {
             @Override
             public void onCompleted(Task t, ModelNode data) {
                 counter.completed++;
@@ -66,7 +66,9 @@ public class TaskFailureTest {
             public void onFailed(TaskGroup g, Throwable e) {
                 counter.failed++;
             }
-        });
+        };
+
+        Service service = new Service(configuration, completionHandler);
 
         service.start();
         SECONDS.sleep(2);

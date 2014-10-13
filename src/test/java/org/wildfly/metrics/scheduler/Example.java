@@ -37,7 +37,7 @@ public class Example {
         Configuration configuration = new TestConfiguration().load();
 
         // create service
-        Service service = new Service(configuration, new DebugCompletionHandler());
+        Service service = new Service(configuration);
 
         // schedule
         service.start();
