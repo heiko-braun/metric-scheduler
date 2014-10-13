@@ -68,7 +68,8 @@ public class ConfigurationInstance implements Configuration {
 
     @Override
     public String getInfluxUrl() {
-        return "http://sandbox.influxdb.com:8086";
+        //return "http://sandbox.influxdb.com:8086";
+        return "http://localhost:8086";
     }
 
     @Override

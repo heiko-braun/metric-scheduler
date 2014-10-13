@@ -1,6 +1,5 @@
 package org.wildfly.metrics.scheduler.storage;
 
-import org.wildfly.metrics.scheduler.config.Configuration;
 import org.wildfly.metrics.scheduler.polling.Scheduler;
 
 import java.util.HashSet;
