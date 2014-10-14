@@ -1,7 +1,6 @@
 package org.wildfly.metrics.scheduler;
 
-import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Timer;
@@ -11,8 +10,11 @@ import org.wildfly.metrics.scheduler.config.ResourceRef;
 import org.wildfly.metrics.scheduler.polling.IntervalBasedScheduler;
 import org.wildfly.metrics.scheduler.polling.Scheduler;
 import org.wildfly.metrics.scheduler.polling.Task;
+import org.wildfly.metrics.scheduler.report.Monitor;
+import org.wildfly.metrics.scheduler.report.StorageReporter;
 import org.wildfly.metrics.scheduler.storage.BufferedStorageDispatcher;
 import org.wildfly.metrics.scheduler.storage.InfluxStorageAdapter;
+import org.wildfly.metrics.scheduler.storage.StorageAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  */
 public class Service implements TopologyChangeListener {
 
+    private final StorageAdapter storageAdapter;
     private Configuration configuration;
     private Scheduler scheduler;
     private Monitor monitor;
@@ -45,12 +48,16 @@ public class Service implements TopologyChangeListener {
     public Service(Configuration configuration) {
 
         this.configuration = configuration;
-        this.completionHandler = new BufferedStorageDispatcher(
-                new InfluxStorageAdapter(configuration) // TODO: make configurable
-        );
-        final MetricRegistry metrics = new MetricRegistry();
+        this.storageAdapter = new InfluxStorageAdapter(configuration);
+        this.completionHandler = new BufferedStorageDispatcher(storageAdapter);  // TODO: make configurable
 
-        this.reporter = ConsoleReporter.forRegistry(metrics)
+        final MetricRegistry metrics = new MetricRegistry();
+       /* this.reporter = ConsoleReporter.forRegistry(metrics)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(MILLISECONDS)
+                .build();*/
+
+        this.reporter = StorageReporter.forRegistry(metrics, storageAdapter)
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(MILLISECONDS)
                 .build();
@@ -70,9 +77,8 @@ public class Service implements TopologyChangeListener {
         return new Monitor() {
 
             private final Timer requestTimer = metrics.timer(name("dmr-request-timer"));
-            private final Counter delayCounter = metrics.counter(name("task-delay-counter"));
-            private final Counter taskAttemptCounter = metrics.counter(name("task-attempt-counter"));
-            private final Counter taskErrorCounter = metrics.counter(name("task-error-counter"));
+            private final Meter delayCounter = metrics.meter(name("task-delay-rate"));
+            private final Meter taskErrorCounter = metrics.meter(name("task-error-rate"));
 
             @Override
             public Timer getRequestTimer() {
@@ -80,17 +86,12 @@ public class Service implements TopologyChangeListener {
             }
 
             @Override
-            public Counter getDelayedCounter() {
+            public Meter getDelayedRate() {
                 return delayCounter;
             }
 
             @Override
-            public Counter getAttemptCounter() {
-                return taskAttemptCounter;
-            }
-
-            @Override
-            public Counter getErrorCounter() {
+            public Meter getErrorRate() {
                 return taskErrorCounter;
             }
         };

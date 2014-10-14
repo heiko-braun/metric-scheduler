@@ -40,7 +40,7 @@ public class LongRunning {
         Service service = new Service(configuration);
 
         // schedule
-        service.reportEvery(10, SECONDS);
+        service.reportEvery(5, SECONDS);
         service.start();
         MINUTES.sleep(60);
 

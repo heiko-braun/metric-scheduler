@@ -25,7 +25,7 @@ import com.codahale.metrics.Timer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.wildfly.metrics.scheduler.Monitor;
+import org.wildfly.metrics.scheduler.report.Monitor;
 import org.wildfly.metrics.scheduler.storage.Sample;
 
 import javax.security.auth.callback.Callback;
@@ -197,10 +197,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
             try {
 
-                monitor.getAttemptCounter().inc();
-
                 Timer.Context requestContext = monitor.getRequestTimer().time();
-                monitor.getDelayedCounter().inc(); // assumption: every op is delayed or erroneous
 
                 // execute request
                 ModelNode response = client.execute(operation);
@@ -211,8 +208,8 @@ public class IntervalBasedScheduler extends AbstractScheduler {
                 if (SUCCESS.equals(outcome))
                 {
 
-                    if (durationMs < group.getInterval().millis()) {
-                        monitor.getDelayedCounter().dec(); // not delayed
+                    if (durationMs > group.getInterval().millis()) {
+                        monitor.getDelayedRate().mark(1);
                     }
 
                     List<Property> steps = response.get(RESULT).asPropertyList();
@@ -240,12 +237,12 @@ public class IntervalBasedScheduler extends AbstractScheduler {
 
 
                 } else {
-                    monitor.getErrorCounter().inc();
+                    monitor.getErrorRate().mark(1);
                     completionHandler.onFailed(new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
                 }
 
             } catch (IOException e) {
-                monitor.getErrorCounter().inc();
+                monitor.getErrorRate().mark(1);
                 completionHandler.onFailed(e);
             } finally {
 
