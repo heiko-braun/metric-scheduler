@@ -1,5 +1,6 @@
 package org.wildfly.metrics.scheduler.storage;
 
+import org.wildfly.metrics.scheduler.diagnose.Diagnostics;
 import org.wildfly.metrics.scheduler.polling.Scheduler;
 
 import java.util.HashSet;
@@ -16,11 +17,13 @@ public class BufferedStorageDispatcher implements Scheduler.CompletionHandler {
     private static final int MAX_BATCH_SIZE = 24;
     private static final int BUFFER_SIZE = 100;
     private final StorageAdapter storageAdapter;
+    private final Diagnostics diagnostics;
     private final BlockingQueue<Sample> queue;
     private final Worker worker;
 
-    public BufferedStorageDispatcher(StorageAdapter storageAdapter) {
+    public BufferedStorageDispatcher(StorageAdapter storageAdapter, Diagnostics diagnostics) {
         this.storageAdapter = storageAdapter;
+        this.diagnostics = diagnostics;
         this.queue = new ArrayBlockingQueue<Sample>(BUFFER_SIZE);
         this.worker = new Worker(queue);
     }
@@ -36,7 +39,8 @@ public class BufferedStorageDispatcher implements Scheduler.CompletionHandler {
     @Override
     public void onCompleted(Sample sample) {
         if(queue.remainingCapacity()>0) {
-            System.out.println(sample.getTask().getAttribute()+" > "+sample.getValue());
+            //System.out.println(sample.getTask().getAttribute()+" > "+sample.getValue());
+            diagnostics.getStorageBufferSize().inc();
             queue.add(sample);
         }
         else {
@@ -66,6 +70,8 @@ public class BufferedStorageDispatcher implements Scheduler.CompletionHandler {
                     Set<Sample> samples = new HashSet<>();
                     queue.drainTo(samples, MAX_BATCH_SIZE);
                     samples.add(sample);
+
+                    diagnostics.getStorageBufferSize().dec(samples.size());
 
                     // dispatch
                     storageAdapter.store(samples);

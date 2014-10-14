@@ -1,5 +1,6 @@
 package org.wildfly.metrics.scheduler;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
@@ -7,11 +8,11 @@ import com.codahale.metrics.Timer;
 import org.wildfly.metrics.scheduler.config.Address;
 import org.wildfly.metrics.scheduler.config.Configuration;
 import org.wildfly.metrics.scheduler.config.ResourceRef;
+import org.wildfly.metrics.scheduler.diagnose.Diagnostics;
 import org.wildfly.metrics.scheduler.polling.IntervalBasedScheduler;
 import org.wildfly.metrics.scheduler.polling.Scheduler;
 import org.wildfly.metrics.scheduler.polling.Task;
-import org.wildfly.metrics.scheduler.report.Monitor;
-import org.wildfly.metrics.scheduler.report.StorageReporter;
+import org.wildfly.metrics.scheduler.diagnose.StorageReporter;
 import org.wildfly.metrics.scheduler.storage.BufferedStorageDispatcher;
 import org.wildfly.metrics.scheduler.storage.InfluxStorageAdapter;
 import org.wildfly.metrics.scheduler.storage.StorageAdapter;
@@ -36,7 +37,7 @@ public class Service implements TopologyChangeListener {
     private final StorageAdapter storageAdapter;
     private Configuration configuration;
     private Scheduler scheduler;
-    private Monitor monitor;
+    private Diagnostics diagnostics;
     private ScheduledReporter reporter;
     private boolean started = false;
     private BufferedStorageDispatcher completionHandler;
@@ -48,24 +49,27 @@ public class Service implements TopologyChangeListener {
     public Service(Configuration configuration) {
 
         this.configuration = configuration;
-        this.storageAdapter = new InfluxStorageAdapter(configuration);
-        this.completionHandler = new BufferedStorageDispatcher(storageAdapter);  // TODO: make configurable
 
         final MetricRegistry metrics = new MetricRegistry();
-       /* this.reporter = ConsoleReporter.forRegistry(metrics)
-                .convertRatesTo(TimeUnit.SECONDS)
-                .convertDurationsTo(MILLISECONDS)
-                .build();*/
+
+        this.diagnostics = createDiagnostics(metrics);
+
+        this.storageAdapter = new InfluxStorageAdapter(configuration, diagnostics);
+
+        /* this.reporter = ConsoleReporter.forRegistry(metrics)
+                        .convertRatesTo(TimeUnit.SECONDS)
+                        .convertDurationsTo(MILLISECONDS)
+                        .build();*/
 
         this.reporter = StorageReporter.forRegistry(metrics, storageAdapter)
-                .convertRatesTo(TimeUnit.SECONDS)
-                .convertDurationsTo(MILLISECONDS)
-                .build();
+                        .convertRatesTo(TimeUnit.SECONDS)
+                        .convertDurationsTo(MILLISECONDS)
+                        .build();
 
-        this.monitor = createMonitor(metrics);
+        this.completionHandler = new BufferedStorageDispatcher(storageAdapter, diagnostics);  // TODO: make configurable
 
         this.scheduler = new IntervalBasedScheduler(
-                monitor,
+                diagnostics,
                 configuration.getSchedulerThreads(),
                 configuration.getHost(),
                 configuration.getPort()
@@ -73,12 +77,14 @@ public class Service implements TopologyChangeListener {
     }
 
 
-    private Monitor createMonitor(final MetricRegistry metrics) {
-        return new Monitor() {
+    private Diagnostics createDiagnostics(final MetricRegistry metrics) {
+        return new Diagnostics() {
 
             private final Timer requestTimer = metrics.timer(name("dmr-request-timer"));
             private final Meter delayCounter = metrics.meter(name("task-delay-rate"));
             private final Meter taskErrorCounter = metrics.meter(name("task-error-rate"));
+            private final Meter storageError = metrics.meter(name("storage-error-rate"));
+            private final Counter storageBuffer = metrics.counter(name("storage-buffer-size"));
 
             @Override
             public Timer getRequestTimer() {
@@ -93,6 +99,16 @@ public class Service implements TopologyChangeListener {
             @Override
             public Meter getErrorRate() {
                 return taskErrorCounter;
+            }
+
+            @Override
+            public Meter getStorageErrorRate() {
+                return storageError;
+            }
+
+            @Override
+            public Counter getStorageBufferSize() {
+                return storageBuffer;
             }
         };
     }

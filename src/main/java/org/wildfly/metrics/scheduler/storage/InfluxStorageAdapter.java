@@ -4,6 +4,7 @@ import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Serie;
 import org.wildfly.metrics.scheduler.config.Configuration;
+import org.wildfly.metrics.scheduler.diagnose.Diagnostics;
 
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -18,8 +19,10 @@ public class InfluxStorageAdapter implements StorageAdapter {
 
     private final InfluxDB influxDB;
     private final String dbName;
+    private final Diagnostics diagnostics;
 
-    public InfluxStorageAdapter(Configuration config) {
+    public InfluxStorageAdapter(Configuration config, Diagnostics diagnostics) {
+        this.diagnostics = diagnostics;
         this.influxDB = InfluxDBFactory.connect(
                 config.getInfluxUrl(),
                 config.getInfluxUser(),
@@ -48,6 +51,7 @@ public class InfluxStorageAdapter implements StorageAdapter {
             this.influxDB.write(this.dbName, TimeUnit.MILLISECONDS, series);
 
         } catch (Throwable t) {
+            diagnostics.getStorageErrorRate().mark(1);
             t.printStackTrace();
         }
 

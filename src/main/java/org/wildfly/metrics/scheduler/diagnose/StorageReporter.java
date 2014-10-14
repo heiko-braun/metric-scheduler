@@ -1,4 +1,4 @@
-package org.wildfly.metrics.scheduler.report;
+package org.wildfly.metrics.scheduler.diagnose;
 
 import com.codahale.metrics.Clock;
 import com.codahale.metrics.Counter;

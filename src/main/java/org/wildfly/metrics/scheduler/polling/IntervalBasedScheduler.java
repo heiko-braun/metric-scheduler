@@ -25,7 +25,7 @@ import com.codahale.metrics.Timer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.wildfly.metrics.scheduler.report.Monitor;
+import org.wildfly.metrics.scheduler.diagnose.Diagnostics;
 import org.wildfly.metrics.scheduler.storage.Sample;
 
 import javax.security.auth.callback.Callback;
@@ -61,11 +61,11 @@ public class IntervalBasedScheduler extends AbstractScheduler {
     private final String host;
     private final int port;
 
-    private final Monitor monitor;
+    private final Diagnostics monitor;
 
     private ConcurrentLinkedQueue<ModelControllerClient> connectionPool = new ConcurrentLinkedQueue<>();
 
-    public IntervalBasedScheduler(Monitor monitor, final int poolSize, String host, int port) {
+    public IntervalBasedScheduler(Diagnostics monitor, final int poolSize, String host, int port) {
         this.monitor = monitor;
         this.poolSize = poolSize;
         this.host = host;
