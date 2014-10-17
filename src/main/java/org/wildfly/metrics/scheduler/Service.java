@@ -1,5 +1,6 @@
 package org.wildfly.metrics.scheduler;
 
+import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -9,12 +10,12 @@ import org.wildfly.metrics.scheduler.config.Address;
 import org.wildfly.metrics.scheduler.config.Configuration;
 import org.wildfly.metrics.scheduler.config.ResourceRef;
 import org.wildfly.metrics.scheduler.diagnose.Diagnostics;
+import org.wildfly.metrics.scheduler.polling.ClientFactoryImpl;
 import org.wildfly.metrics.scheduler.polling.IntervalBasedScheduler;
 import org.wildfly.metrics.scheduler.polling.Scheduler;
 import org.wildfly.metrics.scheduler.polling.Task;
-import org.wildfly.metrics.scheduler.diagnose.StorageReporter;
 import org.wildfly.metrics.scheduler.storage.BufferedStorageDispatcher;
-import org.wildfly.metrics.scheduler.storage.InfluxStorageAdapter;
+import org.wildfly.metrics.scheduler.storage.RHQStorageAdapter;
 import org.wildfly.metrics.scheduler.storage.StorageAdapter;
 
 import java.util.ArrayList;
@@ -43,10 +44,24 @@ public class Service implements TopologyChangeListener {
     private BufferedStorageDispatcher completionHandler;
 
     /**
+        *
+        * @param configuration
+        */
+    public Service(Configuration configuration) {
+        this(configuration, new ClientFactoryImpl(
+                configuration.getHost(),
+                configuration.getPort(),
+                configuration.getUsername(),
+                configuration.getPassword())
+        );
+    }
+
+    /**
      *
      * @param configuration
+     * @param clientFactory
      */
-    public Service(Configuration configuration) {
+    public Service(Configuration configuration, ModelControllerClientFactory clientFactory) {
 
         this.configuration = configuration;
 
@@ -54,25 +69,25 @@ public class Service implements TopologyChangeListener {
 
         this.diagnostics = createDiagnostics(metrics);
 
-        this.storageAdapter = new InfluxStorageAdapter(configuration, diagnostics);
+        //this.storageAdapter = new InfluxStorageAdapter(configuration, diagnostics);
+        this.storageAdapter = new RHQStorageAdapter(configuration);
 
-        /* this.reporter = ConsoleReporter.forRegistry(metrics)
-                        .convertRatesTo(TimeUnit.SECONDS)
-                        .convertDurationsTo(MILLISECONDS)
-                        .build();*/
-
-        this.reporter = StorageReporter.forRegistry(metrics, storageAdapter)
+         this.reporter = ConsoleReporter.forRegistry(metrics)
                         .convertRatesTo(TimeUnit.SECONDS)
                         .convertDurationsTo(MILLISECONDS)
                         .build();
 
+      /*  this.reporter = StorageReporter.forRegistry(metrics, storageAdapter)
+                        .convertRatesTo(TimeUnit.SECONDS)
+                        .convertDurationsTo(MILLISECONDS)
+                        .build();*/
+
         this.completionHandler = new BufferedStorageDispatcher(storageAdapter, diagnostics);  // TODO: make configurable
 
         this.scheduler = new IntervalBasedScheduler(
+                clientFactory,
                 diagnostics,
-                configuration.getSchedulerThreads(),
-                configuration.getHost(),
-                configuration.getPort()
+                configuration.getSchedulerThreads()
         );
     }
 
@@ -113,15 +128,15 @@ public class Service implements TopologyChangeListener {
         };
     }
 
-    void start() {
+    public void start(String host, String server) {
 
         // turn ResourceRef into Tasks (relative to absolute addresses ...)
-        List<Task> tasks = createTasks(configuration.getResourceRefs());
+        List<Task> tasks = createTasks(host, server, configuration.getResourceRefs());
         this.completionHandler.start();
         this.scheduler.schedule(tasks, completionHandler);
     }
 
-    private List<Task> createTasks(List<ResourceRef> resourceRefs) {
+    private List<Task> createTasks(String host, String server, List<ResourceRef> resourceRefs) {
         List<Task> tasks = new ArrayList<>();
         for (ResourceRef ref : resourceRefs) {
 
@@ -134,14 +149,12 @@ public class Service implements TopologyChangeListener {
                 attribute = attribute.substring(0, i);
             }
 
-            // TODO: resolve absolute addresses
-
-            tasks.add(new Task(Address.apply(ref.getAddress()), attribute, subref, ref.getInterval()));
+            tasks.add(new Task(host, server, Address.apply(ref.getAddress()), attribute, subref, ref.getInterval()));
         }
         return tasks;
     }
 
-    void stop() {
+    public void stop() {
         this.completionHandler.shutdown();
         this.scheduler.shutdown();
         this.reporter.stop();

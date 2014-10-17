@@ -11,13 +11,13 @@ public class TaskGroupTest {
     @Test(expected = UnsupportedOperationException.class)
     public void readonly() {
         TaskGroup group = new TaskGroup(EACH_SECOND);
-        group.addTask(new Task(Address.apply("/foo=bar"), "attribute", null, Interval.EACH_SECOND));
+        group.addTask(new Task("foo", "bar", Address.apply("/foo=bar"), "attribute", null, Interval.EACH_SECOND));
         group.iterator().remove();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void interval() {
         TaskGroup group = new TaskGroup(EACH_SECOND);
-        group.addTask(new Task(Address.apply("/foo=bar"), "attribute", null, Interval.EACH_DAY));
+        group.addTask(new Task("foo", "bar", Address.apply("/foo=bar"), "attribute", null, Interval.EACH_DAY));
     }
 }

@@ -70,7 +70,7 @@ public class StorageReporter extends ScheduledReporter {
 
                 samples.add(
                         new Sample(
-                                new Task(Address.apply("service=metric-scheduler"), entry.getKey(), null, Interval.EACH_SECOND),
+                                new Task("foo", "bar", Address.apply("service=metric-scheduler"), entry.getKey(), null, Interval.EACH_SECOND),
                                 gauge.getValue()
                         )
                 );
@@ -84,7 +84,7 @@ public class StorageReporter extends ScheduledReporter {
             for (Map.Entry<String, Counter> entry : counters.entrySet()) {
                 samples.add(
                         new Sample(
-                                new Task(Address.apply("service=metric-scheduler"), entry.getKey(), null, Interval.EACH_SECOND),
+                                new Task("foo", "bar", Address.apply("service=metric-scheduler"), entry.getKey(), null, Interval.EACH_SECOND),
                                 entry.getValue().getCount()
                         )
                 );
@@ -116,7 +116,7 @@ public class StorageReporter extends ScheduledReporter {
                 Meter meter = entry.getValue();
                 samples.add(
                         new Sample(
-                                new Task(Address.apply("service=metric-scheduler"), entry.getKey(), null, Interval.EACH_SECOND),
+                                new Task("foo", "bar", Address.apply("service=metric-scheduler"), entry.getKey(), null, Interval.EACH_SECOND),
                                 meter.getOneMinuteRate()
                         )
                 );
@@ -133,7 +133,7 @@ public class StorageReporter extends ScheduledReporter {
 
                 samples.add(
                         new Sample(
-                                new Task(Address.apply("service=metric-scheduler"), entry.getKey(), null, Interval.EACH_SECOND),
+                                new Task("foo", "bar", Address.apply("service=metric-scheduler"), entry.getKey(), null, Interval.EACH_SECOND),
                                 timer.getSnapshot().get75thPercentile()
                         )
                 );

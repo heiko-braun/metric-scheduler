@@ -39,7 +39,7 @@ public class Example {
         Service service = new Service(configuration);
 
         // schedule
-        service.start();
+        service.start("localhost", "default-server");
         SECONDS.sleep(10);
 
         // shutdown

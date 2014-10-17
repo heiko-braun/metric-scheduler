@@ -41,7 +41,7 @@ public class LongRunning {
 
         // schedule
         service.reportEvery(5, SECONDS);
-        service.start();
+        service.start("localhost", "default-server");
         MINUTES.sleep(60);
 
         // shutdown

@@ -39,7 +39,7 @@ public class RHQStorageAdapter implements StorageAdapter {
 
             for (Sample sample : samples) {
                 Task task = sample.getTask();
-                String source = "localhost."+task.getAttribute();
+                String source = task.getHost()+"."+task.getServer()+"."+task.getAttribute();
                 metrics.add(new SingleMetric(source, sample.getTimestamp(), sample.getValue()));
             }
 

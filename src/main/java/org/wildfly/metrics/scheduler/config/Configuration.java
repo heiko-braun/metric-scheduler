@@ -9,17 +9,29 @@ import java.util.List;
 public interface Configuration {
 
     /**
-     * The remote domain controller host.
+     * The host controller host.
      * @return
      */
     String getHost();
 
     /**
-     * The remote domain controller port.
+     * The host controller port.
      *
      * @return
      */
     int getPort();
+
+    /**
+     * Host controller user
+     * @return
+     */
+    String getUsername();
+
+    /**
+     * Host controller password
+     * @return
+     */
+    String getPassword();
 
     /**
      * Number of threads the scheduler uses to poll for new data.
@@ -46,4 +58,6 @@ public interface Configuration {
     String getInfluxDBName();
 
     String getRHQUrl();
+
+
 }

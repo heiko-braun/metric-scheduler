@@ -25,17 +25,11 @@ import com.codahale.metrics.Timer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.metrics.scheduler.ModelControllerClientFactory;
 import org.wildfly.metrics.scheduler.diagnose.Diagnostics;
 import org.wildfly.metrics.scheduler.storage.Sample;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.RealmCallback;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -58,18 +52,16 @@ public class IntervalBasedScheduler extends AbstractScheduler {
     private final ScheduledExecutorService executorService;
     private final List<ScheduledFuture> jobs;
     private final int poolSize;
-    private final String host;
-    private final int port;
 
+    private final ModelControllerClientFactory clientFactory;
     private final Diagnostics monitor;
 
     private ConcurrentLinkedQueue<ModelControllerClient> connectionPool = new ConcurrentLinkedQueue<>();
 
-    public IntervalBasedScheduler(Diagnostics monitor, final int poolSize, String host, int port) {
+    public IntervalBasedScheduler(ModelControllerClientFactory clientFactory, Diagnostics monitor, final int poolSize) {
+        this.clientFactory = clientFactory;
         this.monitor = monitor;
         this.poolSize = poolSize;
-        this.host = host;
-        this.port = port;
 
         this.executorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
             @Override
@@ -93,31 +85,11 @@ public class IntervalBasedScheduler extends AbstractScheduler {
         System.out.println("<< Number of Tasks: "+tasks.size()+" >>");
         System.out.println("<< Number of Task Groups: "+groups.size()+" >>");
 
-        final CallbackHandler callbackHandler = new CallbackHandler() {
-
-            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                for (Callback current : callbacks) {
-                    if (current instanceof NameCallback) {
-                        NameCallback ncb = (NameCallback) current;
-                        ncb.setName("admin");         // TODO config
-                    } else if (current instanceof PasswordCallback) {
-                        PasswordCallback pcb = (PasswordCallback) current;
-                        pcb.setPassword("password123".toCharArray());     // TODO config
-                    } else if (current instanceof RealmCallback) {
-                        RealmCallback rcb = (RealmCallback) current;
-                        rcb.setText(rcb.getDefaultText());
-                    } else {
-                        throw new UnsupportedCallbackException(current);
-                    }
-                }
-            }
-        };
-
         // populate connection pool
         for (int i = 0; i < poolSize; i++) {
             try {
                 connectionPool.add(
-                        ModelControllerClient.Factory.create(InetAddress.getByName(host), port, callbackHandler)
+                        clientFactory.createClient()
                 );
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -241,7 +213,7 @@ public class IntervalBasedScheduler extends AbstractScheduler {
                     completionHandler.onFailed(new RuntimeException(response.get(FAILURE_DESCRIPTION).asString()));
                 }
 
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 monitor.getErrorRate().mark(1);
                 completionHandler.onFailed(e);
             } finally {

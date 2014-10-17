@@ -33,18 +33,28 @@ import java.util.List;
 public class ConfigurationInstance implements Configuration {
 
     private final List<ResourceRef> resourceRefs;
+    private int schedulerThreads = 2;
+
     private String host;
     private int port;
-    private int schedulerThreads = 2;
+    private String user;
+    private String password;
+
+    private String rhqUrl = "http://localhost:8080/rhq-metrics/metrics";
+
+    private String influxUrl = "http://sandbox.influxdb.com:8086";
+    private String influxUser;
+    private String influxPassword;
+    private String influxDb;
+
+    public ConfigurationInstance(String host, int port) {
+        this(host, port, new ArrayList<ResourceRef>());
+    }
 
     public ConfigurationInstance(String host, int port, final List<ResourceRef> resourceRefs) {
         this.host = host;
         this.port = port;
-        this.resourceRefs = new ArrayList<>();
-
-        if (resourceRefs != null) {
-            this.resourceRefs.addAll(resourceRefs);
-        }
+        this.resourceRefs = resourceRefs;
     }
 
     public List<ResourceRef> getResourceRefs() {
@@ -62,33 +72,88 @@ public class ConfigurationInstance implements Configuration {
     }
 
     @Override
+    public String getUsername() {
+        return this.user;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void setSchedulerThreads(int schedulerThreads) {
+        this.schedulerThreads = schedulerThreads;
+    }
+
+    @Override
     public int getSchedulerThreads() {
         return schedulerThreads;
     }
 
     @Override
     public String getInfluxUrl() {
-        //return "http://sandbox.influxdb.com:8086";
-        return "http://localhost:8086";
+        return this.influxUrl;
+    }
+
+    public void setInfluxUrl(String influxUrl) {
+        this.influxUrl = influxUrl;
     }
 
     @Override
     public String getInfluxUser() {
-        return "admin";
+        return influxUser;
     }
 
     @Override
     public String getInfluxPassword() {
-        return "password123";
+        return influxPassword;
     }
 
     @Override
     public String getInfluxDBName() {
-        return "wildfly";
+        return influxDb;
+    }
+
+    public void setInfluxUser(String influxUser) {
+        this.influxUser = influxUser;
+    }
+
+    public void setInfluxPassword(String influxPassword) {
+        this.influxPassword = influxPassword;
+    }
+
+    public void setInfluxDb(String influxDb) {
+        this.influxDb = influxDb;
     }
 
     @Override
     public String getRHQUrl() {
-        return "http://localhost:8080/rhq-metrics/metrics";
+        return rhqUrl;
     }
+
+    public void setRhqUrl(String rhqUrl) {
+        this.rhqUrl = rhqUrl;
+    }
+
+    public void addResourceRef(ResourceRef ref) {
+        this.resourceRefs.add(ref);
+    }
+
 }
+
