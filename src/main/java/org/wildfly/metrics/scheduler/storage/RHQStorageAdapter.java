@@ -9,6 +9,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.rhq.metrics.client.common.Batcher;
 import org.rhq.metrics.client.common.SingleMetric;
 import org.wildfly.metrics.scheduler.config.Configuration;
+import org.wildfly.metrics.scheduler.diagnose.Diagnostics;
 import org.wildfly.metrics.scheduler.polling.Task;
 
 import java.io.IOException;
@@ -25,15 +26,17 @@ import java.util.Set;
 public class RHQStorageAdapter implements StorageAdapter {
 
     private final Configuration config;
+    private final Diagnostics diagnostics;
     private HttpClient httpclient = new DefaultHttpClient();
 
-    public RHQStorageAdapter(Configuration config) {
+    public RHQStorageAdapter(Configuration config, Diagnostics diagnostics) {
         this.config = config;
+        this.diagnostics = diagnostics;
     }
 
     @Override
     public void store(Set<Sample> samples) {
-
+        HttpPost post = new HttpPost(config.getRHQUrl());
         try {
             List<SingleMetric> metrics = new ArrayList<>();
 
@@ -45,8 +48,8 @@ public class RHQStorageAdapter implements StorageAdapter {
 
 
             // If we have data, send it to the RHQ Metrics server
+
             if (metrics.size()>0) {
-                HttpPost post = new HttpPost(config.getRHQUrl());
                 post.setHeader("Content-Type", "application/json;charset=utf-8");
                 post.setEntity(new StringEntity(Batcher.metricListToJson(metrics)));
 
@@ -54,13 +57,17 @@ public class RHQStorageAdapter implements StorageAdapter {
                 StatusLine statusLine = httpResponse.getStatusLine();
 
                 if (statusLine.getStatusCode() != 200) {
-                    System.err.println(" +-- Result status is " + statusLine);
+                    throw new Exception("HTTP Status "+statusLine.getStatusCode()+": "+statusLine);
                 }
 
-                post.releaseConnection();
+
             }
-        } catch (IllegalArgumentException | IOException iae) {
-            iae.printStackTrace();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            diagnostics.getStorageErrorRate().mark(1);
+        }
+        finally {
+            post.releaseConnection();
         }
 
     }

@@ -70,7 +70,7 @@ public class Service implements TopologyChangeListener {
         this.diagnostics = createDiagnostics(metrics);
 
         //this.storageAdapter = new InfluxStorageAdapter(configuration, diagnostics);
-        this.storageAdapter = new RHQStorageAdapter(configuration);
+        this.storageAdapter = new RHQStorageAdapter(configuration, diagnostics);
 
          this.reporter = ConsoleReporter.forRegistry(metrics)
                         .convertRatesTo(TimeUnit.SECONDS)
