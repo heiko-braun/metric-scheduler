@@ -59,5 +59,5 @@ public interface Configuration {
 
     String getRHQUrl();
 
-
+    String getStorageAdapterType();
 }

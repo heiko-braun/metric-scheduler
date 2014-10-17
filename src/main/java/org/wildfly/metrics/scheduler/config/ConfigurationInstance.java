@@ -21,6 +21,8 @@
  */
 package org.wildfly.metrics.scheduler.config;
 
+import org.wildfly.metrics.scheduler.storage.InfluxStorageAdapter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,9 +45,15 @@ public class ConfigurationInstance implements Configuration {
     private String rhqUrl = "http://localhost:8080/rhq-metrics/metrics";
 
     private String influxUrl = "http://sandbox.influxdb.com:8086";
-    private String influxUser;
-    private String influxPassword;
-    private String influxDb;
+    private String influxUser = "admin";
+    private String influxPassword = "password123";
+    private String influxDb = "wildfly";
+
+    private String storageAdapterType = InfluxStorageAdapter.class.getName();
+
+    public ConfigurationInstance() {
+        this("localhost", 9990, new ArrayList<ResourceRef>());
+    }
 
     public ConfigurationInstance(String host, int port) {
         this(host, port, new ArrayList<ResourceRef>());
@@ -155,5 +163,13 @@ public class ConfigurationInstance implements Configuration {
         this.resourceRefs.add(ref);
     }
 
+    @Override
+    public String getStorageAdapterType() {
+        return storageAdapterType;
+    }
+
+    public void setStorageAdapterType(String storageAdapterType) {
+        this.storageAdapterType = storageAdapterType;
+    }
 }
 

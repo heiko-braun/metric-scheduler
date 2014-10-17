@@ -25,13 +25,19 @@ import java.util.Set;
  */
 public class RHQStorageAdapter implements StorageAdapter {
 
-    private final Configuration config;
-    private final Diagnostics diagnostics;
+    private Configuration config;
+    private Diagnostics diagnostics;
     private HttpClient httpclient = new DefaultHttpClient();
 
-    public RHQStorageAdapter(Configuration config, Diagnostics diagnostics) {
+
+    @Override
+    public void setConfiguration(Configuration config) {
         this.config = config;
-        this.diagnostics = diagnostics;
+    }
+
+    @Override
+    public void setDiagnostics(Diagnostics diag) {
+        this.diagnostics = diag;
     }
 
     @Override

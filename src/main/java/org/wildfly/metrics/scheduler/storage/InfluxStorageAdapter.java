@@ -17,18 +17,25 @@ import java.util.concurrent.TimeUnit;
  */
 public class InfluxStorageAdapter implements StorageAdapter {
 
-    private final InfluxDB influxDB;
-    private final String dbName;
-    private final Diagnostics diagnostics;
+    private InfluxDB influxDB;
+    private String dbName;
+    private Diagnostics diagnostics;
+    private Configuration config;
 
-    public InfluxStorageAdapter(Configuration config, Diagnostics diagnostics) {
-        this.diagnostics = diagnostics;
+    @Override
+    public void setConfiguration(Configuration config) {
+        this.config = config;
         this.influxDB = InfluxDBFactory.connect(
                 config.getInfluxUrl(),
                 config.getInfluxUser(),
                 config.getInfluxPassword()
         );
         this.dbName = config.getInfluxDBName();
+    }
+
+    @Override
+    public void setDiagnostics(Diagnostics diag) {
+        this.diagnostics = diag;
     }
 
     @Override

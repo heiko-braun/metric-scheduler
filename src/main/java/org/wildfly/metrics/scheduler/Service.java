@@ -15,7 +15,6 @@ import org.wildfly.metrics.scheduler.polling.IntervalBasedScheduler;
 import org.wildfly.metrics.scheduler.polling.Scheduler;
 import org.wildfly.metrics.scheduler.polling.Task;
 import org.wildfly.metrics.scheduler.storage.BufferedStorageDispatcher;
-import org.wildfly.metrics.scheduler.storage.RHQStorageAdapter;
 import org.wildfly.metrics.scheduler.storage.StorageAdapter;
 
 import java.util.ArrayList;
@@ -69,8 +68,9 @@ public class Service implements TopologyChangeListener {
 
         this.diagnostics = createDiagnostics(metrics);
 
-        //this.storageAdapter = new InfluxStorageAdapter(configuration, diagnostics);
-        this.storageAdapter = new RHQStorageAdapter(configuration, diagnostics);
+        this.storageAdapter = (StorageAdapter)load(StorageAdapter.class, configuration.getStorageAdapterType());
+        this.storageAdapter.setConfiguration(configuration);
+        this.storageAdapter.setDiagnostics(diagnostics);
 
          this.reporter = ConsoleReporter.forRegistry(metrics)
                         .convertRatesTo(TimeUnit.SECONDS)
@@ -82,13 +82,21 @@ public class Service implements TopologyChangeListener {
                         .convertDurationsTo(MILLISECONDS)
                         .build();*/
 
-        this.completionHandler = new BufferedStorageDispatcher(storageAdapter, diagnostics);  // TODO: make configurable
+        this.completionHandler = new BufferedStorageDispatcher(storageAdapter, diagnostics);
 
         this.scheduler = new IntervalBasedScheduler(
                 clientFactory,
                 diagnostics,
                 configuration.getSchedulerThreads()
         );
+    }
+
+    private Object load(Class type, String className)  {
+        try {
+            return Service.class.forName(className).newInstance();
+        } catch (Throwable e) {
+          throw new IllegalArgumentException("Failed to load service "+type+": "+e.getMessage());
+        }
     }
 
 
