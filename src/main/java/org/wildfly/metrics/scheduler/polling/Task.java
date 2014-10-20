@@ -18,7 +18,13 @@ public class Task {
     private final String subref;
     private final Interval interval;
 
-    public Task(String host, String server, Address address, String attribute, String subref, Interval interval) {
+    public Task(
+            String host, String server,
+            Address address,
+            String attribute,
+            String subref,
+            Interval interval
+    ) {
         this.host = host;
         this.server = server;
         this.address = address;

@@ -59,7 +59,7 @@ public final class TestConfiguration implements ConfigLoader {
         definitions.add(new ResourceRef(vmAddress, "heap-memory-usage#used", EACH_SECOND));
         definitions.add(new ResourceRef(vmAddress, "non-heap-memory-usage#used", EACH_SECOND));
 
-        definitions.add(new ResourceRef("/core-service=platform-mbean/type=threading", "thread-count", Interval.FIVE_SECONDS));
+        definitions.add(new ResourceRef("/core-service=platform-mbean/type=threading", "thread-count", Interval.TWENTY_SECONDS));
 
 
         return new ConfigurationInstance("localhost", 9990, definitions);

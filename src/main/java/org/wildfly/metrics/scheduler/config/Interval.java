@@ -28,30 +28,20 @@ import static java.util.concurrent.TimeUnit.*;
 /**
  * @author Harald Pehl
  */
-public enum Interval{
+public class Interval{
 
-    EACH_SECOND(1, SECONDS),
-    TWO_SECONDS(2, SECONDS),
-    FIVE_SECONDS(5, SECONDS),
-
-    EACH_MINUTE(1, MINUTES),
-    TWO_MINUTES(2, MINUTES),
-    FIVE_MINUTES(5, MINUTES),
-    TEN_MINUTES(10, MINUTES),
-    TWENTY_MINUTES(20, MINUTES),
-    THIRTY_MINUTES(30, MINUTES),
-
-    EACH_HOUR(1, TimeUnit.HOURS),
-    TWO_HOURS(2, TimeUnit.HOURS),
-    SIX_HOURS(6, TimeUnit.HOURS),
-    TWELVE_HOURS(12, TimeUnit.HOURS),
-
-    EACH_DAY(1, TimeUnit.DAYS);
+    public final static Interval EACH_SECOND = new Interval(1, SECONDS);
+    public final static Interval TWENTY_SECONDS = new Interval(20, SECONDS);
+    public final static Interval EACH_MINUTE = new Interval(1, MINUTES);
+    public final static Interval TWENTY_MINUTES = new Interval(20, MINUTES);
+    public final static Interval EACH_HOUR = new Interval(1, HOURS);
+    public final static Interval FOUR_HOURS = new Interval(4, HOURS);
+    public final static Interval EACH_DAY = new Interval(24, HOURS);
 
     private final int val;
     private final TimeUnit unit;
 
-    Interval(int val, TimeUnit unit) {
+    public Interval(int val, TimeUnit unit) {
         this.val = val;
         this.unit = unit;
     }
