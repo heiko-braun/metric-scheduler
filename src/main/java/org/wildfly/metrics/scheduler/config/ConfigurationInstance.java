@@ -21,8 +21,6 @@
  */
 package org.wildfly.metrics.scheduler.config;
 
-import org.wildfly.metrics.scheduler.storage.InfluxStorageAdapter;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +45,9 @@ public class ConfigurationInstance implements Configuration {
     private String storagePassword = "password123";
     private String storageDb = "wildfly";
     private String storageToken = null;
-    private String storageAdapterType = InfluxStorageAdapter.class.getName();
+    private Storage storageAdapter = Storage.INFLUX;
+
+    private Diagnostics diagnostics = Diagnostics.CONSOLE;
 
     public ConfigurationInstance() {
         this("localhost", 9990, new ArrayList<ResourceRef>());
@@ -132,13 +132,14 @@ public class ConfigurationInstance implements Configuration {
         return storageDb;
     }
 
+
     @Override
-    public String getStorageAdapterType() {
-        return storageAdapterType;
+    public Storage getStorageAdapter() {
+        return storageAdapter;
     }
 
-    public void setStorageAdapterType(String storageAdapterType) {
-        this.storageAdapterType = storageAdapterType;
+    public void setStorageAdapter(Storage storageAdapter) {
+        this.storageAdapter = storageAdapter;
     }
 
     public void setStorageUrl(String storageUrl) {
@@ -171,6 +172,18 @@ public class ConfigurationInstance implements Configuration {
 
     public void setStorageToken(String storageToken) {
         this.storageToken = storageToken;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public Diagnostics getDiagnostics() {
+        return diagnostics;
+    }
+
+    public void setDiagnostics(Diagnostics diagnostics) {
+        this.diagnostics = diagnostics;
     }
 }
 

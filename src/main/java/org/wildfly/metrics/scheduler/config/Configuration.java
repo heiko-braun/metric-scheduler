@@ -8,6 +8,9 @@ import java.util.List;
  */
 public interface Configuration {
 
+    public enum Diagnostics {STORAGE, CONSOLE};
+    public enum Storage {RHQ, INFLUX}
+
     /**
      * The host controller host.
      * @return
@@ -49,7 +52,7 @@ public interface Configuration {
      */
     List<ResourceRef> getResourceRefs();
 
-    String getStorageAdapterType();
+    Storage getStorageAdapter();
 
     String getStorageUrl();
 
@@ -61,5 +64,6 @@ public interface Configuration {
 
     String getStorageToken();
 
+    Diagnostics getDiagnostics();
 
 }

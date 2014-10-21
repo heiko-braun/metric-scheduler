@@ -10,11 +10,14 @@ import org.wildfly.metrics.scheduler.config.Address;
 import org.wildfly.metrics.scheduler.config.Configuration;
 import org.wildfly.metrics.scheduler.config.ResourceRef;
 import org.wildfly.metrics.scheduler.diagnose.Diagnostics;
+import org.wildfly.metrics.scheduler.diagnose.StorageReporter;
 import org.wildfly.metrics.scheduler.polling.ClientFactoryImpl;
 import org.wildfly.metrics.scheduler.polling.IntervalBasedScheduler;
 import org.wildfly.metrics.scheduler.polling.Scheduler;
 import org.wildfly.metrics.scheduler.polling.Task;
 import org.wildfly.metrics.scheduler.storage.BufferedStorageDispatcher;
+import org.wildfly.metrics.scheduler.storage.InfluxStorageAdapter;
+import org.wildfly.metrics.scheduler.storage.RHQStorageAdapter;
 import org.wildfly.metrics.scheduler.storage.StorageAdapter;
 
 import java.util.ArrayList;
@@ -68,19 +71,32 @@ public class Service implements TopologyChangeListener {
 
         this.diagnostics = createDiagnostics(metrics);
 
-        this.storageAdapter = (StorageAdapter)load(StorageAdapter.class, configuration.getStorageAdapterType());
+        if(Configuration.Storage.RHQ == configuration.getStorageAdapter())
+        {
+            this.storageAdapter = new RHQStorageAdapter();
+        }
+        else
+        {
+            this.storageAdapter = new InfluxStorageAdapter();
+        }
+
         this.storageAdapter.setConfiguration(configuration);
         this.storageAdapter.setDiagnostics(diagnostics);
 
-         this.reporter = ConsoleReporter.forRegistry(metrics)
-                        .convertRatesTo(TimeUnit.SECONDS)
-                        .convertDurationsTo(MILLISECONDS)
-                        .build();
+        if(Configuration.Diagnostics.CONSOLE == configuration.getDiagnostics()) {
 
-      /*  this.reporter = StorageReporter.forRegistry(metrics, storageAdapter)
-                        .convertRatesTo(TimeUnit.SECONDS)
-                        .convertDurationsTo(MILLISECONDS)
-                        .build();*/
+            this.reporter = ConsoleReporter.forRegistry(metrics)
+                    .convertRatesTo(TimeUnit.SECONDS)
+                    .convertDurationsTo(MILLISECONDS)
+                    .build();
+        }
+        else
+        {
+            this.reporter = StorageReporter.forRegistry(metrics, storageAdapter)
+                    .convertRatesTo(TimeUnit.SECONDS)
+                    .convertDurationsTo(MILLISECONDS)
+                    .build();
+        }
 
         this.completionHandler = new BufferedStorageDispatcher(storageAdapter, diagnostics);
 
@@ -90,15 +106,6 @@ public class Service implements TopologyChangeListener {
                 configuration.getSchedulerThreads()
         );
     }
-
-    private Object load(Class type, String className)  {
-        try {
-            return Service.class.forName(className).newInstance();
-        } catch (Throwable e) {
-          throw new IllegalArgumentException("Failed to load service "+type+": "+e.getMessage());
-        }
-    }
-
 
     private Diagnostics createDiagnostics(final MetricRegistry metrics) {
         return new Diagnostics() {
