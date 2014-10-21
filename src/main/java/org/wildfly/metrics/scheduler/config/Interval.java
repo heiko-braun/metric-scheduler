@@ -49,4 +49,12 @@ public class Interval{
     public long millis() {
         return MILLISECONDS.convert(val, unit);
     }
+
+    public int getVal() {
+        return val;
+    }
+
+    public TimeUnit getUnit() {
+        return unit;
+    }
 }
