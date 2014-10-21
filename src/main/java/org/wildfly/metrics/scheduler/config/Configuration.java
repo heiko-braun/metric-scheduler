@@ -49,15 +49,17 @@ public interface Configuration {
      */
     List<ResourceRef> getResourceRefs();
 
-    String getInfluxUrl();
-
-    String getInfluxUser();
-
-    String getInfluxPassword();
-
-    String getInfluxDBName();
-
-    String getRHQUrl();
-
     String getStorageAdapterType();
+
+    String getStorageUrl();
+
+    String getStorageUser();
+
+    String getStoragePassword();
+
+    String getStorageDBName();
+
+    String getStorageToken();
+
+
 }

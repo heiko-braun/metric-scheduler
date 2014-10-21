@@ -26,11 +26,11 @@ public class InfluxStorageAdapter implements StorageAdapter {
     public void setConfiguration(Configuration config) {
         this.config = config;
         this.influxDB = InfluxDBFactory.connect(
-                config.getInfluxUrl(),
-                config.getInfluxUser(),
-                config.getInfluxPassword()
+                config.getStorageUrl(),
+                config.getStorageUser(),
+                config.getStoragePassword()
         );
-        this.dbName = config.getInfluxDBName();
+        this.dbName = config.getStorageDBName();
     }
 
     @Override

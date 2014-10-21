@@ -42,7 +42,7 @@ public class RHQStorageAdapter implements StorageAdapter {
 
     @Override
     public void store(Set<Sample> samples) {
-        HttpPost post = new HttpPost(config.getRHQUrl());
+        HttpPost post = new HttpPost(config.getStorageUrl());
         try {
             List<SingleMetric> metrics = new ArrayList<>();
 

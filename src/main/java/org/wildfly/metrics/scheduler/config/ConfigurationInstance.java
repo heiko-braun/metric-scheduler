@@ -42,13 +42,11 @@ public class ConfigurationInstance implements Configuration {
     private String user;
     private String password;
 
-    private String rhqUrl = "http://localhost:8080/rhq-metrics/metrics";
-
-    private String influxUrl = "http://sandbox.influxdb.com:8086";
-    private String influxUser = "admin";
-    private String influxPassword = "password123";
-    private String influxDb = "wildfly";
-
+    private String storageUrl = "http://sandbox.influxdb.com:8086";
+    private String storageUser = "admin";
+    private String storagePassword = "password123";
+    private String storageDb = "wildfly";
+    private String storageToken = null;
     private String storageAdapterType = InfluxStorageAdapter.class.getName();
 
     public ConfigurationInstance() {
@@ -115,52 +113,23 @@ public class ConfigurationInstance implements Configuration {
     }
 
     @Override
-    public String getInfluxUrl() {
-        return this.influxUrl;
-    }
-
-    public void setInfluxUrl(String influxUrl) {
-        this.influxUrl = influxUrl;
+    public String getStorageUrl() {
+        return this.storageUrl;
     }
 
     @Override
-    public String getInfluxUser() {
-        return influxUser;
+    public String getStorageUser() {
+        return storageUser;
     }
 
     @Override
-    public String getInfluxPassword() {
-        return influxPassword;
+    public String getStoragePassword() {
+        return storagePassword;
     }
 
     @Override
-    public String getInfluxDBName() {
-        return influxDb;
-    }
-
-    public void setInfluxUser(String influxUser) {
-        this.influxUser = influxUser;
-    }
-
-    public void setInfluxPassword(String influxPassword) {
-        this.influxPassword = influxPassword;
-    }
-
-    public void setInfluxDb(String influxDb) {
-        this.influxDb = influxDb;
-    }
-
-    @Override
-    public String getRHQUrl() {
-        return rhqUrl;
-    }
-
-    public void setRhqUrl(String rhqUrl) {
-        this.rhqUrl = rhqUrl;
-    }
-
-    public void addResourceRef(ResourceRef ref) {
-        this.resourceRefs.add(ref);
+    public String getStorageDBName() {
+        return storageDb;
     }
 
     @Override
@@ -170,6 +139,38 @@ public class ConfigurationInstance implements Configuration {
 
     public void setStorageAdapterType(String storageAdapterType) {
         this.storageAdapterType = storageAdapterType;
+    }
+
+    public void setStorageUrl(String storageUrl) {
+        this.storageUrl = storageUrl;
+    }
+
+    public void setStorageUser(String storageUser) {
+        this.storageUser = storageUser;
+    }
+
+    public void setStoragePassword(String storagePassword) {
+        this.storagePassword = storagePassword;
+    }
+
+    public void setStorageDb(String storageDb) {
+        this.storageDb = storageDb;
+    }
+
+    public void addResourceRef(ResourceRef ref) {
+        resourceRefs.add(ref);
+    }
+
+    public String getStorageDb() {
+        return storageDb;
+    }
+
+    public String getStorageToken() {
+        return storageToken;
+    }
+
+    public void setStorageToken(String storageToken) {
+        this.storageToken = storageToken;
     }
 }
 
